@@ -20,6 +20,7 @@ const Navbar = () => {
           <Link to="/shop" className="navbar-item">Shop</Link>
           <Link to="/explore" className="navbar-item">Explore</Link>
           <Link to="/login" className="navbar-item">Login</Link>
+          <Link to="/join the creation" className="navbar-item">Join the creation</Link>
         </div>
         
         <div className="navbar-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
