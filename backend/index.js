@@ -11,7 +11,7 @@ app.use(express.json());
 // Simple test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend server is running!' });
-});
+}); 
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
