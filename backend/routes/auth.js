@@ -1,4 +1,4 @@
-// backend/routes/authRoutes.js
+// backend/routes/auth.js
 const express = require('express');
 const router = express.Router();
 const { 
@@ -8,13 +8,13 @@ const {
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
-// Register new user
+// Register user
 router.post('/register', registerUser);
 
 // Login user
 router.post('/login', loginUser);
 
-// Get user profile (protected route)
+// Get user profile
 router.get('/profile', protect, getUserProfile);
 
 module.exports = router;

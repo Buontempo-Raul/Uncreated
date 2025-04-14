@@ -1,238 +1,212 @@
 // src/pages/Shop/Shop.js
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import './Shop.css';
+// Uncomment when ready to use API
+// import { artworkAPI } from '../../services/api';
+
+// Temporary artwork data - Replace with API calls when ready
+const tempArtworks = [
+  {
+    _id: '1',
+    title: 'Abstract Harmony',
+    description: 'A vibrant exploration of color and form.',
+    images: ['https://via.placeholder.com/400x300?text=Abstract+Harmony'],
+    price: 299.99,
+    category: 'painting',
+    creator: {
+      username: 'artistic_soul',
+      profileImage: 'https://via.placeholder.com/50x50'
+    }
+  },
+  {
+    _id: '2',
+    title: 'Urban Landscape',
+    description: 'Cityscape captured through a unique perspective.',
+    images: ['https://via.placeholder.com/400x300?text=Urban+Landscape'],
+    price: 349.99,
+    category: 'photography',
+    creator: {
+      username: 'city_explorer',
+      profileImage: 'https://via.placeholder.com/50x50'
+    }
+  },
+  {
+    _id: '3',
+    title: 'Serenity',
+    description: 'A peaceful nature-inspired sculpture.',
+    images: ['https://via.placeholder.com/400x300?text=Serenity'],
+    price: 499.99,
+    category: 'sculpture',
+    creator: {
+      username: 'nature_artist',
+      profileImage: 'https://via.placeholder.com/50x50'
+    }
+  },
+  {
+    _id: '4',
+    title: 'Digital Dreams',
+    description: 'A futuristic digital artwork exploring imagination.',
+    images: ['https://via.placeholder.com/400x300?text=Digital+Dreams'],
+    price: 199.99,
+    category: 'digital',
+    creator: {
+      username: 'future_creative',
+      profileImage: 'https://via.placeholder.com/50x50'
+    }
+  },
+  {
+    _id: '5',
+    title: 'Emotional Expressions',
+    description: 'A portrait series capturing human emotions.',
+    images: ['https://via.placeholder.com/400x300?text=Emotional+Expressions'],
+    price: 399.99,
+    category: 'painting',
+    creator: {
+      username: 'emotion_artist',
+      profileImage: 'https://via.placeholder.com/50x50'
+    }
+  },
+  {
+    _id: '6',
+    title: 'Textured Patterns',
+    description: 'Mixed media artwork with unique textures and patterns.',
+    images: ['https://via.placeholder.com/400x300?text=Textured+Patterns'],
+    price: 279.99,
+    category: 'mixed media',
+    creator: {
+      username: 'texture_master',
+      profileImage: 'https://via.placeholder.com/50x50'
+    }
+  }
+];
 
 const Shop = () => {
-  const [products, setProducts] = useState([]);
+  const [artworks, setArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Mock data for now - this would come from your backend API in production
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setProducts([
-        {
-          id: 1,
-          title: 'Abstract Painting',
-          artist: 'Jane Doe',
-          price: 299.99,
-          image: 'https://via.placeholder.com/300x300?text=Abstract+Art',
-          category: 'paintings'
-        },
-        {
-          id: 2,
-          title: 'Digital Landscape',
-          artist: 'John Smith',
-          price: 149.99,
-          image: 'https://via.placeholder.com/300x300?text=Digital+Art',
-          category: 'digital'
-        },
-        {
-          id: 3,
-          title: 'Handcrafted Necklace',
-          artist: 'Maria Garcia',
-          price: 89.99,
-          image: 'https://via.placeholder.com/300x300?text=Jewelry',
-          category: 'jewelry'
-        },
-        {
-          id: 4,
-          title: 'Ceramic Vase',
-          artist: 'Alex Chen',
-          price: 129.99,
-          image: 'https://via.placeholder.com/300x300?text=Ceramics',
-          category: 'sculptures'
-        },
-        {
-          id: 5,
-          title: 'Portrait Photography',
-          artist: 'Sophia Williams',
-          price: 199.99,
-          image: 'https://via.placeholder.com/300x300?text=Photography',
-          category: 'photos'
-        },
-        {
-          id: 6,
-          title: 'Wooden Sculpture',
-          artist: 'Daniel Johnson',
-          price: 349.99,
-          image: 'https://via.placeholder.com/300x300?text=Sculpture',
-          category: 'sculptures'
-        },
-        {
-          id: 7,
-          title: 'Acrylic Landscape',
-          artist: 'Emily Brown',
-          price: 279.99,
-          image: 'https://via.placeholder.com/300x300?text=Landscape',
-          category: 'paintings'
-        },
-        {
-          id: 8,
-          title: 'Digital Character Art',
-          artist: 'Ryan Thomas',
-          price: 159.99,
-          image: 'https://via.placeholder.com/300x300?text=Character+Art',
-          category: 'digital'
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
-
-  // Filter and search functionality
-  const filteredProducts = products.filter(product => {
-    // Apply category filter
-    if (filter !== 'all' && product.category !== filter) {
-      return false;
-    }
-    
-    // Apply search filter
-    return product.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-           product.artist.toLowerCase().includes(searchTerm.toLowerCase());
+  const [filter, setFilter] = useState({
+    category: '',
+    priceRange: '',
+    sortBy: 'latest'
   });
 
-  const handleFilterChange = (newFilter) => {
-    setFilter(newFilter);
-  };
+  useEffect(() => {
+    // Function to fetch artworks
+    const fetchArtworks = async () => {
+      setLoading(true);
+      try {
+        // Uncomment when ready to use API
+        // const response = await artworkAPI.getArtworks(filter);
+        // if (response.data.success) {
+        //   setArtworks(response.data.artworks);
+        // }
 
-  // Animation variants for framer-motion
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
+        // Temporary - using mock data
+        // Simulate API delay
+        setTimeout(() => {
+          setArtworks(tempArtworks);
+          setLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error fetching artworks:', error);
+        setLoading(false);
       }
-    }
-  };
+    };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.5
-      }
-    }
+    fetchArtworks();
+  }, [filter]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilter({
+      ...filter,
+      [name]: value
+    });
   };
 
   return (
     <div className="shop-container">
-      <div className="shop-header">
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          Uncreated Shop
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Discover and purchase unique creations from talented artists
-        </motion.p>
-      </div>
-
-      <div className="shop-controls">
-        <div className="search-container">
-          <input 
-            type="text" 
-            placeholder="Search art or artists..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+      <h1 className="shop-title">Explore Artworks</h1>
+      
+      <div className="shop-filters">
+        <div className="filter-group">
+          <label htmlFor="category">Category</label>
+          <select
+            id="category"
+            name="category"
+            value={filter.category}
+            onChange={handleFilterChange}
+          >
+            <option value="">All Categories</option>
+            <option value="painting">Painting</option>
+            <option value="sculpture">Sculpture</option>
+            <option value="photography">Photography</option>
+            <option value="digital">Digital Art</option>
+            <option value="mixed media">Mixed Media</option>
+            <option value="other">Other</option>
+          </select>
         </div>
-        <div className="filter-container">
-          <button 
-            className={`filter-btn ${filter === 'all' ? 'active' : ''}`} 
-            onClick={() => handleFilterChange('all')}
+        
+        <div className="filter-group">
+          <label htmlFor="priceRange">Price Range</label>
+          <select
+            id="priceRange"
+            name="priceRange"
+            value={filter.priceRange}
+            onChange={handleFilterChange}
           >
-            All
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'paintings' ? 'active' : ''}`} 
-            onClick={() => handleFilterChange('paintings')}
+            <option value="">All Prices</option>
+            <option value="0-100">Under $100</option>
+            <option value="100-300">$100 - $300</option>
+            <option value="300-500">$300 - $500</option>
+            <option value="500-1000">$500 - $1000</option>
+            <option value="1000-">Over $1000</option>
+          </select>
+        </div>
+        
+        <div className="filter-group">
+          <label htmlFor="sortBy">Sort By</label>
+          <select
+            id="sortBy"
+            name="sortBy"
+            value={filter.sortBy}
+            onChange={handleFilterChange}
           >
-            Paintings
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'digital' ? 'active' : ''}`} 
-            onClick={() => handleFilterChange('digital')}
-          >
-            Digital Art
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'sculptures' ? 'active' : ''}`} 
-            onClick={() => handleFilterChange('sculptures')}
-          >
-            Sculptures
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'jewelry' ? 'active' : ''}`} 
-            onClick={() => handleFilterChange('jewelry')}
-          >
-            Jewelry
-          </button>
-          <button 
-            className={`filter-btn ${filter === 'photos' ? 'active' : ''}`} 
-            onClick={() => handleFilterChange('photos')}
-          >
-            Photography
-          </button>
+            <option value="latest">Latest</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="popular">Most Popular</option>
+          </select>
         </div>
       </div>
-
+      
       {loading ? (
-        <div className="loading-container">
-          <div className="loader"></div>
-          <p>Loading amazing art...</p>
-        </div>
+        <div className="loading">Loading artworks...</div>
       ) : (
-        <>
-          {filteredProducts.length === 0 ? (
-            <div className="no-results">
-              <h2>No artworks found</h2>
-              <p>Try adjusting your search or filter criteria</p>
-            </div>
+        <div className="artworks-grid">
+          {artworks.length > 0 ? (
+            artworks.map((artwork) => (
+              <div key={artwork._id} className="artwork-card">
+                <div className="artwork-image">
+                  <img src={artwork.images[0]} alt={artwork.title} />
+                </div>
+                <div className="artwork-details">
+                  <h3 className="artwork-title">{artwork.title}</h3>
+                  <p className="artwork-creator">
+                    by <Link to={`/profile/${artwork.creator.username}`}>{artwork.creator.username}</Link>
+                  </p>
+                  <p className="artwork-category">{artwork.category}</p>
+                  <p className="artwork-price">${artwork.price.toFixed(2)}</p>
+                  <Link to={`/artwork/${artwork._id}`} className="view-button">
+                    View Details
+                  </Link>
+                </div>
+              </div>
+            ))
           ) : (
-            <motion.div 
-              className="products-grid"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {filteredProducts.map(product => (
-                <motion.div 
-                  key={product.id} 
-                  className="product-card"
-                  variants={itemVariants}
-                  whileHover={{ 
-                    y: -10,
-                    boxShadow: "0 15px 30px rgba(0,0,0,0.1)"
-                  }}
-                >
-                  <div className="product-image">
-                    <img src={product.image} alt={product.title} />
-                  </div>
-                  <div className="product-info">
-                    <h3>{product.title}</h3>
-                    <p className="artist">By {product.artist}</p>
-                    <p className="price">${product.price.toFixed(2)}</p>
-                    <button className="add-to-cart-btn">Add to Cart</button>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+            <div className="no-results">No artworks found matching your criteria.</div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

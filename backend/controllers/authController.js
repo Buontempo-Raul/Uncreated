@@ -1,11 +1,11 @@
 // backend/controllers/authController.js
-const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-// Generate JWT token
+// Generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: '30d'
   });
 };
 
@@ -16,44 +16,50 @@ const registerUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if user already exists
+    // Check if user exists
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
 
     if (userExists) {
-      if (userExists.email === email) {
-        return res.status(400).json({ message: 'Email already in use' });
-      }
-      if (userExists.username === username) {
-        return res.status(400).json({ message: 'Username already taken' });
-      }
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User already exists' 
+      });
     }
 
     // Create new user
     const user = await User.create({
       username,
       email,
-      password,
+      password
     });
 
     if (user) {
       res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        isArtist: user.isArtist,
-        profilePicture: user.profilePicture,
-        token: generateToken(user._id),
+        success: true,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          isArtist: user.isArtist,
+          profileImage: user.profileImage,
+          token: generateToken(user._id)
+        }
       });
     } else {
-      res.status(400).json({ message: 'Invalid user data' });
+      res.status(400).json({ 
+        success: false, 
+        message: 'Invalid user data' 
+      });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
-// @desc    Authenticate user & get token
+// @desc    Login user & get token
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
@@ -61,24 +67,32 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
 
     // Check if user exists and password matches
     if (user && (await user.matchPassword(password))) {
-      res.status(200).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        isArtist: user.isArtist,
-        profilePicture: user.profilePicture,
-        token: generateToken(user._id),
+      res.json({
+        success: true,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          isArtist: user.isArtist,
+          profileImage: user.profileImage,
+          token: generateToken(user._id)
+        }
       });
     } else {
-      res.status(401).json({ message: 'Invalid email or password' });
+      res.status(401).json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -90,25 +104,35 @@ const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (user) {
-      res.status(200).json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        isArtist: user.isArtist,
-        profilePicture: user.profilePicture,
-        bio: user.bio,
+      res.json({
+        success: true,
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          isArtist: user.isArtist,
+          profileImage: user.profileImage,
+          bio: user.bio,
+          website: user.website,
+          createdAt: user.createdAt
+        }
       });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ 
+        success: false, 
+        message: 'User not found' 
+      });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
 module.exports = {
   registerUser,
   loginUser,
-  getUserProfile,
+  getUserProfile
 };

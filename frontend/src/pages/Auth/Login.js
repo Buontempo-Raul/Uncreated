@@ -1,134 +1,112 @@
 // src/pages/Auth/Login.js
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { login } from '../../services/auth';
-import useAuth from '../../hooks/useAuth';
-import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
+// Uncomment the following when ready to use authentication
+// import useAuth from '../../hooks/useAuth';
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
+    password: ''
   });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login: authLogin } = useAuth();
   
-  // Check if there's a message from registration or redirect
-  const message = location.state?.message || '';
-  
+  // Uncomment when ready to use authentication
+  // const { login } = useAuth();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    
-    // Clear field-specific error when user types
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
-    }
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
-  
-  const validateForm = () => {
-    const newErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      setIsSubmitting(true);
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
+    // Temporary login simulation - Replace with actual authentication when ready
+    try {
+      // Uncomment when ready to use authentication
+      // const response = await login(formData);
       
-      try {
-        const userData = await login(formData);
-        authLogin(userData);
+      // if (response.success) {
+      //   navigate('/');
+      // } else {
+      //   setError(response.message || 'Login failed');
+      // }
+
+      // Temporary simulation - remove this when implementing actual auth
+      console.log('Login attempted with:', formData);
+      setTimeout(() => {
+        setLoading(false);
+        // Simulate successful login
         navigate('/');
-      } catch (error) {
-        setErrors({ 
-          general: error.message || 'Invalid email or password' 
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
+      }, 1000);
+      
+    } catch (err) {
+      setError(err.message || 'An error occurred during login');
+      setLoading(false);
     }
   };
-  
+
   return (
     <div className="auth-container">
-      <motion.div 
-        className="auth-form-container"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1>Welcome Back</h1>
-        <p className="auth-subtitle">Sign in to continue to Uncreated</p>
+      <h1 className="auth-title">Log In</h1>
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="Enter your email"
+            required
+          />
+        </div>
         
-        {message && <div className="auth-message success">{message}</div>}
-        {errors.general && <div className="auth-message error">{errors.general}</div>}
+        <div className="form-group">
+          <label htmlFor="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            required
+          />
+        </div>
         
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className={errors.email ? 'input-error' : ''}
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className={errors.password ? 'input-error' : ''}
-            />
-            {errors.password && <span className="error-text">{errors.password}</span>}
-          </div>
-          
-          <div className="forgot-password">
-            <Link to="/forgot-password">Forgot password?</Link>
-          </div>
-          
-          <button 
-            type="submit" 
-            className="auth-button"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
-          </button>
-          
-          <div className="auth-redirect">
-            Don't have an account? <Link to="/register">Sign up</Link>
-          </div>
-        </form>
-      </motion.div>
+        <button 
+          type="submit" 
+          className="auth-button"
+          disabled={loading}
+        >
+          {loading ? 'Logging in...' : 'Log In'}
+        </button>
+      </form>
+      
+      <div className="auth-link">
+        Don't have an account? <Link to="/register">Sign up</Link>
+      </div>
     </div>
   );
 };
