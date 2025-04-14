@@ -2,49 +2,45 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import './Login.css';
+import './Auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const { login, loading } = useAuth();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
-    
-    if (!email || !password) {
-      setErrorMessage('Please enter both email and password');
-      return;
-    }
-    
+    setError('');
+    setIsLoading(true);
+
     try {
-      const user = await login(email, password);
+      const result = await login(email, password);
       
-      // Redirect based on user role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
+      if (result.success) {
         navigate('/');
+      } else {
+        setError(result.message || 'Invalid email or password');
       }
-    } catch (error) {
-      setErrorMessage('Invalid email or password');
-      console.error('Login error:', error);
+    } catch (err) {
+      setError('An error occurred during login');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="auth-container">
-      <div className="auth-form-container">
-        <h1>Login</h1>
+      <div className="auth-card">
+        <h2>Login to Uncreated</h2>
         
-        {errorMessage && (
-          <div className="auth-error">{errorMessage}</div>
-        )}
+        {error && <div className="auth-error">{error}</div>}
         
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
@@ -52,7 +48,6 @@ const Login = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
               required
             />
           </div>
@@ -64,7 +59,6 @@ const Login = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
               required
             />
           </div>
@@ -72,25 +66,14 @@ const Login = () => {
           <button 
             type="submit" 
             className="auth-button"
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         
-        <div className="auth-links">
-          <p>
-            Don't have an account? <Link to="/register">Register</Link>
-          </p>
-          <p>
-            <Link to="/forgot-password">Forgot password?</Link>
-          </p>
-        </div>
-        
-        <div className="auth-info">
-          <p>For admin access use:</p>
-          <p>Email: admin@example.com</p>
-          <p>Password: any password will work for this demo</p>
+        <div className="auth-footer">
+          <p>Don't have an account? <Link to="/register">Register</Link></p>
         </div>
       </div>
     </div>

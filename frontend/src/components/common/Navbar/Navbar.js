@@ -1,19 +1,19 @@
 // src/components/common/Navbar/Navbar.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Navbar.css';
 import { useAuth } from '../../../hooks/useAuth';
+import './Navbar.css';
 
-import logo from '../../../assets/images/uncreated.logotransparent.png'
+import logo from '../../../assets/images/uncreated.logotransparent.png';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
     setIsMenuOpen(false);
   };
 
@@ -28,33 +28,23 @@ const Navbar = () => {
           <Link to="/" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Home</Link>
           <Link to="/shop" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Shop</Link>
           <Link to="/explore" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Explore</Link>
+          <Link to="/events" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Events</Link>
           
-          {isAuthenticated ? (
+          {currentUser ? (
             <>
-              <Link 
-                to={`/profile/${user.name.replace(/\s+/g, '-').toLowerCase()}`} 
-                className="navbar-item"
-                onClick={() => setIsMenuOpen(false)}
-              >
+              <Link to={`/profile/${currentUser.username}`} className="navbar-item" onClick={() => setIsMenuOpen(false)}>
                 Profile
               </Link>
-              
-              {isAdmin && (
-                <Link 
-                  to="/admin/dashboard" 
-                  className="navbar-item admin-link"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Admin
-                </Link>
-              )}
-              
-              <button onClick={handleLogout} className="navbar-button">Logout</button>
+              <button className="navbar-item logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
             </>
           ) : (
             <>
               <Link to="/login" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Login</Link>
-              <Link to="/register" className="navbar-button" onClick={() => setIsMenuOpen(false)}>Register</Link>
+              <Link to="/register" className="navbar-item register-btn" onClick={() => setIsMenuOpen(false)}>
+                Register
+              </Link>
             </>
           )}
         </div>
