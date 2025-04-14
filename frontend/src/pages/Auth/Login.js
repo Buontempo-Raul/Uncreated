@@ -1,111 +1,97 @@
 // src/pages/Auth/Login.js
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css';
-// Uncomment the following when ready to use authentication
-// import useAuth from '../../hooks/useAuth';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import './Login.css';
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
-  
-  // Uncomment when ready to use authentication
-  // const { login } = useAuth();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
     
-    // Basic validation
-    if (!formData.email || !formData.password) {
-      setError('Please fill in all fields');
+    if (!email || !password) {
+      setErrorMessage('Please enter both email and password');
       return;
     }
     
-    setLoading(true);
-    setError('');
-    
-    // Temporary login simulation - Replace with actual authentication when ready
     try {
-      // Uncomment when ready to use authentication
-      // const response = await login(formData);
+      const user = await login(email, password);
       
-      // if (response.success) {
-      //   navigate('/');
-      // } else {
-      //   setError(response.message || 'Login failed');
-      // }
-
-      // Temporary simulation - remove this when implementing actual auth
-      console.log('Login attempted with:', formData);
-      setTimeout(() => {
-        setLoading(false);
-        // Simulate successful login
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
         navigate('/');
-      }, 1000);
-      
-    } catch (err) {
-      setError(err.message || 'An error occurred during login');
-      setLoading(false);
+      }
+    } catch (error) {
+      setErrorMessage('Invalid email or password');
+      console.error('Login error:', error);
     }
   };
 
   return (
     <div className="auth-container">
-      <h1 className="auth-title">Log In</h1>
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Enter your email"
-            required
-          />
+      <div className="auth-form-container">
+        <h1>Login</h1>
+        
+        {errorMessage && (
+          <div className="auth-error">{errorMessage}</div>
+        )}
+        
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="auth-button"
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+        
+        <div className="auth-links">
+          <p>
+            Don't have an account? <Link to="/register">Register</Link>
+          </p>
+          <p>
+            <Link to="/forgot-password">Forgot password?</Link>
+          </p>
         </div>
         
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Enter your password"
-            required
-          />
+        <div className="auth-info">
+          <p>For admin access use:</p>
+          <p>Email: admin@example.com</p>
+          <p>Password: any password will work for this demo</p>
         </div>
-        
-        <button 
-          type="submit" 
-          className="auth-button"
-          disabled={loading}
-        >
-          {loading ? 'Logging in...' : 'Log In'}
-        </button>
-      </form>
-      
-      <div className="auth-link">
-        Don't have an account? <Link to="/register">Sign up</Link>
       </div>
     </div>
   );
