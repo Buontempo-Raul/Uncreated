@@ -42,4 +42,14 @@ const isArtist = (req, res, next) => {
   }
 };
 
-module.exports = { protect, isArtist };
+// Check if user is admin
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Not authorized as an admin');
+  }
+};
+
+module.exports = { protect, isArtist, isAdmin };

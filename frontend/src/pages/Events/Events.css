@@ -117,3 +117,24 @@
       align-items: stretch;
     }
   }
+
+  /* Add this to your existing Events.css file */
+
+.request-event-button {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  margin-top: 1.5rem;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+}
+
+.request-event-button:hover {
+  background-color: #8a5ce6;
+}

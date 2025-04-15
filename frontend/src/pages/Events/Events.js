@@ -1,15 +1,18 @@
 // src/pages/Events/Events.js
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import EventCard from '../../components/events/EventCard/EventCard';
 import EventFilter from '../../components/events/EventFilter/EventFilter';
 import SearchBar from '../../components/events/SearchBar/SearchBar';
 import './Events.css';
+import { useAuth } from '../../hooks/useAuth';
 
 // Mock data - replace with actual API calls in production
 import { mockEvents } from '../../data/mockEvents';
 
 const Events = () => {
+  const { isAuthenticated } = useAuth();
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -87,6 +90,12 @@ const Events = () => {
         >
           <h1>Discover Events</h1>
           <p>Explore and attend the most exciting art events in your area</p>
+          
+          {isAuthenticated && (
+            <Link to="/request-event" className="request-event-button">
+              Request to Host an Event
+            </Link>
+          )}
         </motion.div>
       </div>
 

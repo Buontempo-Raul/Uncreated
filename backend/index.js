@@ -23,12 +23,16 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const artworkRoutes = require('./routes/artworks');
 const shopRoutes = require('./routes/shop');
+const eventRoutes = require('./routes/events'); // You'll need to create this
+const eventRequestRoutes = require('./routes/eventRequests');
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/artworks', artworkRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/events/requests', eventRequestRoutes);
 
 // Simple test route
 app.get('/api/test', (req, res) => {
