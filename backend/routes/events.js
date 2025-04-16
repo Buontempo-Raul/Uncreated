@@ -8,7 +8,7 @@ const {
   updateEvent,
   deleteEvent
 } = require('../controllers/eventController');
-const { protect, isAdmin } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middleware/authMiddleware');
 
 // Get all events
 router.get('/', getEvents);
@@ -20,9 +20,9 @@ router.get('/:id', getEventById);
 router.get('/user/:userId', getUserEvents);
 
 // Update event (admin only)
-router.put('/:id', protect, isAdmin, updateEvent);
+router.put('/:id', protect, admin, updateEvent);
 
-// Delete event (admin only)
-router.delete('/:id', protect, isAdmin, deleteEvent);
+// Delete event (admin only)  
+router.delete('/:id', protect, admin, deleteEvent);
 
 module.exports = router;
