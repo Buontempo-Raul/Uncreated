@@ -1,4 +1,4 @@
-// frontend/src/services/api.js
+// src/services/api.js
 import axios from 'axios';
 
 // Create an axios instance with default configs
@@ -29,14 +29,16 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle 401 unauthorized errors
-    if (error.response && error.response.status === 401) {
+    // IMPORTANT: Don't redirect on 401 errors, just return the error
+    // Only redirect for token expiration cases where needed
+    if (error.response && error.response.status === 401 && 
+        error.response.data && error.response.data.message === 'Token expired') {
       // Clear local storage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       
-      // Redirect to login (this is a simple approach, for production you might want a more robust solution)
-      window.location.href = '/login';
+      // But don't redirect automatically
+      // window.location.href = '/login';
     }
     
     return Promise.reject(error);

@@ -41,7 +41,12 @@ export const login = async (credentials) => {
     }
     return response.data;
   } catch (error) {
-    throw error.response?.data || { success: false, message: 'Login failed' };
+    console.error('Login error in service:', error);
+    // Return error as an object rather than throwing it
+    return { 
+      success: false, 
+      message: error.response?.data?.message || 'Invalid email or password' 
+    };
   }
 };
 
