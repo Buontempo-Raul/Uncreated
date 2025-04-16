@@ -1,5 +1,5 @@
 // frontend/src/services/auth.js
-import { authAPI } from './api';
+import api from './api';
 
 // Set user in local storage
 const setUserData = (userData) => {
@@ -22,7 +22,7 @@ const getUserFromStorage = () => {
 // Register user
 export const register = async (userData) => {
   try {
-    const response = await authAPI.register(userData);
+    const response = await api.post('/api/auth/register', userData);
     if (response.data.success) {
       setUserData(response.data.user);
     }
@@ -35,7 +35,7 @@ export const register = async (userData) => {
 // Login user
 export const login = async (credentials) => {
   try {
-    const response = await authAPI.login(credentials);
+    const response = await api.post('/api/auth/login', credentials);
     if (response.data.success) {
       setUserData(response.data.user);
     }
@@ -54,7 +54,7 @@ export const logout = () => {
 // Get current user profile
 export const getCurrentUser = async () => {
   try {
-    const response = await authAPI.getProfile();
+    const response = await api.get('/api/auth/profile');
     return response.data;
   } catch (error) {
     throw error.response?.data || { success: false, message: 'Failed to get user profile' };

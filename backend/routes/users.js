@@ -3,26 +3,34 @@ const express = require('express');
 const router = express.Router();
 const { 
   getUserByUsername,
+  getAllUsers,
+  getUserById,
   updateUserProfile,
+  updateUser,
+  deleteUser,
+  makeUserArtist,
   getUserArtworks,
   addToFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  getUserFavorites
 } = require('../controllers/userController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middleware/authMiddleware');
 
-// Get user by username
+// Public routes
 router.get('/:username', getUserByUsername);
-
-// Update user profile
-router.put('/profile', protect, updateUserProfile);
-
-// Get artworks by a specific user
 router.get('/:username/artworks', getUserArtworks);
 
-// Add artwork to favorites
+// Protected routes (logged in users)
+router.put('/profile', protect, updateUserProfile);
+router.get('/favorites', protect, getUserFavorites);
 router.post('/favorites/:artworkId', protect, addToFavorites);
-
-// Remove artwork from favorites
 router.delete('/favorites/:artworkId', protect, removeFromFavorites);
+
+// Admin routes
+router.get('/', protect, admin, getAllUsers);
+router.get('/id/:userId', protect, admin, getUserById);
+router.put('/:userId', protect, admin, updateUser);
+router.delete('/:userId', protect, admin, deleteUser);
+router.put('/:userId/artist', protect, admin, makeUserArtist);
 
 module.exports = router;

@@ -1,22 +1,27 @@
 // backend/controllers/eventRequestController.js
 const EventRequest = require('../models/EventRequest');
-const Event = require('../models/Event'); // You'll need to create this model
 
 // @desc    Create a new event request
-// @route   POST /api/events/requests
+// @route   POST /api/eventRequests
 // @access  Private
 const createEventRequest = async (req, res) => {
   try {
+    const { title, description, date, location, category } = req.body;
+    
     const eventRequest = new EventRequest({
-      ...req.body,
-      user: req.user._id
+      title,
+      description,
+      date,
+      location,
+      category,
+      user: req.user._id,
     });
 
-    const createdRequest = await eventRequest.save();
-
+    const createdEventRequest = await eventRequest.save();
+    
     res.status(201).json({
       success: true,
-      eventRequest: createdRequest
+      eventRequest: createdEventRequest
     });
   } catch (error) {
     res.status(500).json({
@@ -27,17 +32,14 @@ const createEventRequest = async (req, res) => {
 };
 
 // @desc    Get all event requests
-// @route   GET /api/events/requests
+// @route   GET /api/eventRequests
 // @access  Private/Admin
 const getAllEventRequests = async (req, res) => {
   try {
-    const eventRequests = await EventRequest.find()
-      .populate('user', 'username email')
-      .sort({ createdAt: -1 });
-
+    const eventRequests = await EventRequest.find({}).populate('user', 'username email');
+    
     res.json({
       success: true,
-      count: eventRequests.length,
       eventRequests
     });
   } catch (error) {
@@ -48,17 +50,15 @@ const getAllEventRequests = async (req, res) => {
   }
 };
 
-// @desc    Get event requests by user
-// @route   GET /api/events/requests/my
+// @desc    Get logged in user's event requests
+// @route   GET /api/eventRequests/my
 // @access  Private
 const getMyEventRequests = async (req, res) => {
   try {
-    const eventRequests = await EventRequest.find({ user: req.user._id })
-      .sort({ createdAt: -1 });
-
+    const eventRequests = await EventRequest.find({ user: req.user._id });
+    
     res.json({
       success: true,
-      count: eventRequests.length,
       eventRequests
     });
   } catch (error) {
@@ -70,13 +70,12 @@ const getMyEventRequests = async (req, res) => {
 };
 
 // @desc    Get event request by ID
-// @route   GET /api/events/requests/:id
+// @route   GET /api/eventRequests/:id
 // @access  Private
 const getEventRequestById = async (req, res) => {
   try {
-    const eventRequest = await EventRequest.findById(req.params.id)
-      .populate('user', 'username email');
-
+    const eventRequest = await EventRequest.findById(req.params.id).populate('user', 'username email');
+    
     if (!eventRequest) {
       return res.status(404).json({
         success: false,
@@ -84,14 +83,14 @@ const getEventRequestById = async (req, res) => {
       });
     }
 
-    // Check if the request belongs to the user or if the user is an admin
-    if (eventRequest.user._id.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Check if the user is the creator or an admin
+    if (eventRequest.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to access this request'
+        message: 'Not authorized to access this event request'
       });
     }
-
+    
     res.json({
       success: true,
       eventRequest
@@ -104,72 +103,32 @@ const getEventRequestById = async (req, res) => {
   }
 };
 
-// @desc    Update event request status (approve/reject)
-// @route   PUT /api/events/requests/:id/status
+// @desc    Update event request status
+// @route   PUT /api/eventRequests/:id/status
 // @access  Private/Admin
 const updateEventRequestStatus = async (req, res) => {
   try {
-    const { status, adminFeedback } = req.body;
-
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid status'
-      });
-    }
-
+    const { status, adminComment } = req.body;
+    
     const eventRequest = await EventRequest.findById(req.params.id);
-
+    
     if (!eventRequest) {
       return res.status(404).json({
         success: false,
         message: 'Event request not found'
       });
     }
-
+    
     eventRequest.status = status;
-    eventRequest.adminFeedback = adminFeedback || '';
-    eventRequest.reviewedAt = Date.now();
-    eventRequest.reviewedBy = req.user._id;
-
-    const updatedRequest = await eventRequest.save();
-
-    // If approved, create an actual event
-    if (status === 'approved') {
-      const {
-        title,
-        description,
-        date,
-        time,
-        location,
-        organizer,
-        category,
-        price,
-        isFree,
-        image,
-        user
-      } = eventRequest;
-
-      const event = new Event({
-        title,
-        description,
-        date,
-        time,
-        location,
-        organizer,
-        category,
-        price,
-        isFree,
-        image,
-        createdBy: user
-      });
-
-      await event.save();
+    if (adminComment) {
+      eventRequest.adminComment = adminComment;
     }
-
+    
+    const updatedEventRequest = await eventRequest.save();
+    
     res.json({
       success: true,
-      eventRequest: updatedRequest
+      eventRequest: updatedEventRequest
     });
   } catch (error) {
     res.status(500).json({
@@ -180,29 +139,29 @@ const updateEventRequestStatus = async (req, res) => {
 };
 
 // @desc    Delete event request
-// @route   DELETE /api/events/requests/:id
+// @route   DELETE /api/eventRequests/:id
 // @access  Private
 const deleteEventRequest = async (req, res) => {
   try {
     const eventRequest = await EventRequest.findById(req.params.id);
-
+    
     if (!eventRequest) {
       return res.status(404).json({
         success: false,
         message: 'Event request not found'
       });
     }
-
-    // Only allow the user who created the request or admin to delete it
-    if (eventRequest.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    
+    // Check if the user is the creator or an admin
+    if (eventRequest.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
       return res.status(403).json({
         success: false,
-        message: 'Not authorized to delete this request'
+        message: 'Not authorized to delete this event request'
       });
     }
-
+    
     await eventRequest.deleteOne();
-
+    
     res.json({
       success: true,
       message: 'Event request removed'

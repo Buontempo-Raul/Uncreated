@@ -46,12 +46,29 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Artwork'
   }],
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+  lastLogin: Date,
+  active: {
+    type: Boolean,
+    default: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Virtual for artworks (not stored in DB)
+userSchema.virtual('artworks', {
+  ref: 'Artwork',
+  localField: '_id',
+  foreignField: 'creator',
+  justOne: false
 });
 
 // Hash password before saving
@@ -67,6 +84,23 @@ userSchema.pre('save', async function(next) {
 // Compare entered password with hashed password
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Generate password reset token
+userSchema.methods.generateResetToken = function() {
+  // Generate random token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set token expire time (10 minutes)
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 const User = mongoose.model('User', userSchema);

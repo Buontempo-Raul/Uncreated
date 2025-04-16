@@ -17,18 +17,25 @@ const protect = async (req, res, next) => {
 
       // Get user from token
       req.user = await User.findById(decoded.id).select('-password');
+      
+      if (!req.user) {
+        res.status(401);
+        throw new Error('User not found');
+      }
 
       next();
     } catch (error) {
       console.error(error);
-      res.status(401);
-      throw new Error('Not authorized, token failed');
+      res.status(401).json({
+        success: false,
+        message: 'Not authorized, token failed'
+      });
     }
-  }
-
-  if (!token) {
-    res.status(401);
-    throw new Error('Not authorized, no token');
+  } else {
+    res.status(401).json({
+      success: false,
+      message: 'Not authorized, no token'
+    });
   }
 };
 
@@ -37,19 +44,23 @@ const isArtist = (req, res, next) => {
   if (req.user && req.user.isArtist) {
     next();
   } else {
-    res.status(403);
-    throw new Error('Not authorized as an artist');
+    res.status(403).json({
+      success: false,
+      message: 'Not authorized as an artist'
+    });
   }
 };
 
 // Check if user is admin
-const isAdmin = (req, res, next) => {
+const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    res.status(403);
-    throw new Error('Not authorized as an admin');
+    res.status(403).json({
+      success: false,
+      message: 'Not authorized as an admin'
+    });
   }
 };
 
-module.exports = { protect, isArtist, isAdmin };
+module.exports = { protect, isArtist, admin };

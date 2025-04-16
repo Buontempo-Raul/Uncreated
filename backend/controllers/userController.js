@@ -1,4 +1,5 @@
 // backend/controllers/userController.js
+const userService = require('../services/userService');
 const User = require('../models/User');
 const Artwork = require('../models/Artwork');
 
@@ -7,14 +8,7 @@ const Artwork = require('../models/Artwork');
 // @access  Public
 const getUserByUsername = async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.params.username });
-
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
+    const user = await userService.getUserByUsername(req.params.username);
 
     res.json({
       success: true,
@@ -29,7 +23,61 @@ const getUserByUsername = async (req, res) => {
       }
     });
   } catch (error) {
+    res.status(error.message === 'User not found' ? 404 : 500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get all users (admin only)
+// @route   GET /api/users
+// @access  Private/Admin
+const getAllUsers = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    
+    // Build query
+    const query = {};
+    if (search) {
+      query.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const result = await userService.getAllUsers(query, page, limit);
+    
+    res.json({
+      success: true,
+      users: result.users,
+      totalPages: result.totalPages,
+      currentPage: result.currentPage,
+      totalUsers: result.totalUsers
+    });
+  } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get user by ID (admin only)
+// @route   GET /api/users/id/:userId
+// @access  Private/Admin
+const getUserById = async (req, res) => {
+  try {
+    const user = await userService.getUserById(req.params.userId);
+    
+    res.json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    res.status(error.message === 'User not found' || error.message === 'Invalid user ID format' ? 404 : 500).json({
       success: false,
       message: error.message
     });
@@ -41,42 +89,87 @@ const getUserByUsername = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
-
-    user.username = req.body.username || user.username;
-    user.email = req.body.email || user.email;
-    user.profileImage = req.body.profileImage || user.profileImage;
-    user.bio = req.body.bio || user.bio;
-    user.website = req.body.website || user.website;
-    user.isArtist = req.body.isArtist !== undefined ? req.body.isArtist : user.isArtist;
-
-    if (req.body.password) {
-      user.password = req.body.password;
-    }
-
-    const updatedUser = await user.save();
+    const user = await userService.updateUserProfile(req.user._id, req.body);
 
     res.json({
       success: true,
       user: {
-        _id: updatedUser._id,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        profileImage: updatedUser.profileImage,
-        bio: updatedUser.bio,
-        website: updatedUser.website,
-        isArtist: updatedUser.isArtist
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
+        bio: user.bio,
+        website: user.website,
+        isArtist: user.isArtist
       }
     });
   } catch (error) {
-    res.status(500).json({
+    const status = 
+      error.message === 'User not found' ? 404 :
+      error.message === 'Email already in use' || error.message === 'Username already taken' ? 400 : 500;
+    
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Update user (admin only)
+// @route   PUT /api/users/:userId
+// @access  Private/Admin
+const updateUser = async (req, res) => {
+  try {
+    const user = await userService.updateUserProfile(req.params.userId, req.body);
+    
+    res.json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    const status = 
+      error.message === 'User not found' || error.message === 'Invalid user ID format' ? 404 :
+      error.message === 'Email already in use' || error.message === 'Username already taken' ? 400 : 500;
+    
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Delete user
+// @route   DELETE /api/users/:userId
+// @access  Private/Admin
+const deleteUser = async (req, res) => {
+  try {
+    await userService.deleteUser(req.params.userId);
+    
+    res.json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    res.status(error.message === 'User not found' || error.message === 'Invalid user ID format' ? 404 : 500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Make user an artist
+// @route   PUT /api/users/:userId/artist
+// @access  Private/Admin
+const makeUserArtist = async (req, res) => {
+  try {
+    const user = await userService.makeUserArtist(req.params.userId);
+    
+    res.json({
+      success: true,
+      user
+    });
+  } catch (error) {
+    res.status(error.message === 'User not found' || error.message === 'Invalid user ID format' ? 404 : 500).json({
       success: false,
       message: error.message
     });
@@ -88,14 +181,7 @@ const updateUserProfile = async (req, res) => {
 // @access  Public
 const getUserArtworks = async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.params.username });
-
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'User not found' 
-      });
-    }
+    const user = await userService.getUserByUsername(req.params.username);
 
     const artworks = await Artwork.find({ creator: user._id }).sort({ createdAt: -1 });
 
@@ -104,7 +190,7 @@ const getUserArtworks = async (req, res) => {
       artworks
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(error.message === 'User not found' ? 404 : 500).json({
       success: false,
       message: error.message
     });
@@ -118,28 +204,7 @@ const addToFavorites = async (req, res) => {
   try {
     const { artworkId } = req.params;
     
-    // Check if artwork exists
-    const artwork = await Artwork.findById(artworkId);
-    if (!artwork) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Artwork not found' 
-      });
-    }
-
-    const user = await User.findById(req.user._id);
-    
-    // Check if already in favorites
-    if (user.favorites.includes(artworkId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Artwork already in favorites' 
-      });
-    }
-    
-    // Add to favorites
-    user.favorites.push(artworkId);
-    await user.save();
+    const user = await userService.addToFavorites(req.user._id, artworkId);
     
     res.json({
       success: true,
@@ -147,7 +212,11 @@ const addToFavorites = async (req, res) => {
       favorites: user.favorites
     });
   } catch (error) {
-    res.status(500).json({
+    const status = 
+      error.message === 'User not found' || error.message === 'Invalid ID format' ? 404 :
+      error.message === 'Artwork already in favorites' ? 400 : 500;
+    
+    res.status(status).json({
       success: false,
       message: error.message
     });
@@ -161,23 +230,48 @@ const removeFromFavorites = async (req, res) => {
   try {
     const { artworkId } = req.params;
     
-    const user = await User.findById(req.user._id);
-    
-    // Check if in favorites
-    if (!user.favorites.includes(artworkId)) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Artwork not in favorites' 
-      });
-    }
-    
-    // Remove from favorites
-    user.favorites = user.favorites.filter(id => id.toString() !== artworkId);
-    await user.save();
+    const user = await userService.removeFromFavorites(req.user._id, artworkId);
     
     res.json({
       success: true,
       message: 'Removed from favorites',
+      favorites: user.favorites
+    });
+  } catch (error) {
+    const status = 
+      error.message === 'User not found' || error.message === 'Invalid ID format' ? 404 :
+      error.message === 'Artwork not in favorites' ? 400 : 500;
+    
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get user favorites
+// @route   GET /api/users/favorites
+// @access  Private
+const getUserFavorites = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate({
+        path: 'favorites',
+        populate: {
+          path: 'creator',
+          select: 'username profileImage'
+        }
+      });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.json({
+      success: true,
       favorites: user.favorites
     });
   } catch (error) {
@@ -190,8 +284,14 @@ const removeFromFavorites = async (req, res) => {
 
 module.exports = {
   getUserByUsername,
+  getAllUsers,
+  getUserById,
   updateUserProfile,
+  updateUser,
+  deleteUser,
+  makeUserArtist,
   getUserArtworks,
   addToFavorites,
-  removeFromFavorites
+  removeFromFavorites,
+  getUserFavorites
 };

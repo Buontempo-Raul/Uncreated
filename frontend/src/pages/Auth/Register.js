@@ -1,4 +1,4 @@
-// src/pages/Auth/Register.js
+// frontend/src/pages/Auth/Register.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -52,7 +52,11 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const result = await register(formData.username, formData.email, formData.password);
+      const result = await register(
+        formData.username, 
+        formData.email, 
+        formData.password
+      );
       
       if (result.success) {
         navigate('/');
