@@ -24,7 +24,7 @@ const userRoutes = require('./routes/users');
 const artworkRoutes = require('./routes/artworks');
 const shopRoutes = require('./routes/shop');
 const eventRoutes = require('./routes/events'); // You'll need to create this
-const eventRequestRoutes = require('./routes/eventRequest');
+const eventRequestRoutes = require('./routes/eventRequests');
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -1,12 +1,10 @@
 // src/pages/Admin/EventRequests.js
 import React, { useState, useEffect } from 'react';
 import './Admin.css';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
 const AdminEventRequests = () => {
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [eventRequests, setEventRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,34 +13,16 @@ const AdminEventRequests = () => {
   const [feedbackText, setFeedbackText] = useState('');
 
   useEffect(() => {
-    // Check if user is authenticated and has admin role
-    if (!isAuthenticated || (user && user.role !== 'admin')) {
-      navigate('/login');
-      return;
-    }
-
     // Fetch event requests
     const fetchEventRequests = async () => {
       try {
-        // In a real app, fetch from your API
-        // const response = await fetch('/api/events/requests', {
-        //   headers: {
-        //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-        //   }
-        // });
-        // const data = await response.json();
-        
-        // if (data.success) {
-        //   setEventRequests(data.eventRequests);
-        // }
-
         // Simulating API call with mock data
         setTimeout(() => {
           const mockRequests = [
             {
               _id: '1',
               title: 'Modern Art Workshop',
-              description: 'A workshop on modern art techniques and appreciation.',
+              description: 'A workshop on modern art techniques and appreciation. This interactive session will explore various modern art styles, techniques, and their historical context. Participants will get hands-on experience with different materials and leave with their own creation.',
               date: '2025-06-15',
               time: '1:00 PM - 4:00 PM',
               location: 'City Art Center',
@@ -61,7 +41,7 @@ const AdminEventRequests = () => {
             {
               _id: '2',
               title: 'Digital Photography Exhibition',
-              description: 'Showcase of contemporary digital photography works.',
+              description: 'Showcase of contemporary digital photography works. The exhibition will feature works from emerging photographers exploring modern urban environments through digital lenses. Special focus on post-processing techniques and creative digital manipulation.',
               date: '2025-07-20',
               time: '10:00 AM - 6:00 PM',
               location: 'Metropolitan Gallery',
@@ -80,7 +60,7 @@ const AdminEventRequests = () => {
             {
               _id: '3',
               title: 'Abstract Art Symposium',
-              description: 'Join leading abstract artists for talks and demonstrations.',
+              description: 'Join leading abstract artists for talks and demonstrations. This day-long symposium will feature panel discussions, live demonstrations, and networking opportunities with established abstract artists from around the country.',
               date: '2025-08-10',
               time: '9:00 AM - 5:00 PM',
               location: 'Contemporary Arts Building',
@@ -91,6 +71,7 @@ const AdminEventRequests = () => {
               status: 'approved',
               createdAt: '2025-04-01',
               reviewedAt: '2025-04-02',
+              adminFeedback: 'Approved. Great concept and well-organized proposal. We look forward to hosting this event.',
               user: {
                 _id: '103',
                 username: 'artistalliance',
@@ -100,7 +81,7 @@ const AdminEventRequests = () => {
             {
               _id: '4',
               title: 'Street Dance Competition',
-              description: 'Annual street dance battle with cash prizes.',
+              description: 'Annual street dance battle with cash prizes. Dancers from all styles including breaking, popping, locking, and hip-hop will compete for recognition and cash prizes. Open to all skill levels with separate novice and advanced categories.',
               date: '2025-06-25',
               time: '6:00 PM - 11:00 PM',
               location: 'Urban Center Plaza',
@@ -130,7 +111,7 @@ const AdminEventRequests = () => {
     };
 
     fetchEventRequests();
-  }, [isAuthenticated, user, navigate]);
+  }, []);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -190,9 +171,14 @@ const AdminEventRequests = () => {
       );
       
       setEventRequests(updatedRequests);
+      
+      // Show success message
+      alert('Event request approved successfully!');
+      
       setSelectedRequest(null);
     } catch (error) {
       console.error('Error approving request:', error);
+      alert('Error approving request. Please try again.');
     }
   };
 
@@ -238,9 +224,14 @@ const AdminEventRequests = () => {
       );
       
       setEventRequests(updatedRequests);
+      
+      // Show success message
+      alert('Event request rejected successfully!');
+      
       setSelectedRequest(null);
     } catch (error) {
       console.error('Error rejecting request:', error);
+      alert('Error rejecting request. Please try again.');
     }
   };
 
@@ -325,7 +316,7 @@ const AdminEventRequests = () => {
               <p><strong>Time:</strong> {selectedRequest.time}</p>
               <p><strong>Location:</strong> {selectedRequest.location}</p>
               <p><strong>Organizer:</strong> {selectedRequest.organizer}</p>
-              <p><strong>Price:</strong> {selectedRequest.isFree ? 'Free' : `${selectedRequest.price}`}</p>
+              <p><strong>Price:</strong> {selectedRequest.isFree ? 'Free' : `$${selectedRequest.price}`}</p>
             </div>
             
             <div className="request-info-card">

@@ -49,7 +49,8 @@ const MyEventRequests = () => {
               date: '2025-07-20',
               location: 'Metropolitan Gallery',
               status: 'approved',
-              createdAt: '2025-04-05'
+              createdAt: '2025-04-05',
+              adminFeedback: 'Approved! We look forward to hosting this exhibition.'
             },
             {
               _id: '3',
@@ -146,6 +147,13 @@ const MyEventRequests = () => {
               <p className="request-description">{request.description}</p>
               
               {request.status === 'rejected' && request.adminFeedback && (
+                <div className="admin-feedback">
+                  <h3>Admin Feedback:</h3>
+                  <p>{request.adminFeedback}</p>
+                </div>
+              )}
+              
+              {request.status === 'approved' && request.adminFeedback && (
                 <div className="admin-feedback">
                   <h3>Admin Feedback:</h3>
                   <p>{request.adminFeedback}</p>

@@ -88,13 +88,18 @@ const Events = () => {
           transition={{ duration: 0.8 }}
           className="events-hero-content"
         >
-          <h1>Discover Events</h1>
+          <h1>Discover Art Events</h1>
           <p>Explore and attend the most exciting art events in your area</p>
           
           {isAuthenticated && (
-            <Link to="/request-event" className="request-event-button">
-              Request to Host an Event
-            </Link>
+            <div style={{ marginTop: '1.5rem' }}>
+              <Link to="/request-event" className="request-event-button">
+                Request to Host an Event
+              </Link>
+              <Link to="/my-event-requests" className="request-event-button" style={{ marginLeft: '1rem', backgroundColor: '#6c757d' }}>
+                My Event Requests
+              </Link>
+            </div>
           )}
         </motion.div>
       </div>

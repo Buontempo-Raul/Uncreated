@@ -4,11 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import './Navbar.css';
 
-import logo from '../../../assets/images/uncreated.logotransparent.png';
+// Placeholder for logo - you should update this path to match your actual logo location
+const logo = '/api/placeholder/200/100';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentUser, logout } = useAuth();
+  const { currentUser, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -30,11 +31,24 @@ const Navbar = () => {
           <Link to="/explore" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Explore</Link>
           <Link to="/events" className="navbar-item" onClick={() => setIsMenuOpen(false)}>Events</Link>
           
-          {currentUser ? (
+          {isAuthenticated ? (
             <>
-              <Link to={`/profile/${currentUser.username}`} className="navbar-item" onClick={() => setIsMenuOpen(false)}>
+              {isAdmin && (
+                <Link to="/admin/dashboard" className="navbar-item" onClick={() => setIsMenuOpen(false)}>
+                  Admin Dashboard
+                </Link>
+              )}
+              
+              {!isAdmin && (
+                <Link to="/my-event-requests" className="navbar-item" onClick={() => setIsMenuOpen(false)}>
+                  My Event Requests
+                </Link>
+              )}
+              
+              <Link to={`/profile/${currentUser?.username || 'user'}`} className="navbar-item" onClick={() => setIsMenuOpen(false)}>
                 Profile
               </Link>
+              
               <button className="navbar-item logout-btn" onClick={handleLogout}>
                 Logout
               </button>

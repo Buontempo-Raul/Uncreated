@@ -9,13 +9,13 @@ const {
   updateEventRequestStatus,
   deleteEventRequest
 } = require('../controllers/eventRequestController');
-const { protect, isAdmin } = require('../middleware/authMiddleware');
+const { protect, admin } = require('../middleware/authMiddleware');
 
 // Create a new event request
 router.post('/', protect, createEventRequest);
 
 // Get all event requests (admin only)
-router.get('/', protect, isAdmin, getAllEventRequests);
+router.get('/', protect, admin, getAllEventRequests);
 
 // Get current user's event requests
 router.get('/my', protect, getMyEventRequests);
@@ -24,7 +24,7 @@ router.get('/my', protect, getMyEventRequests);
 router.get('/:id', protect, getEventRequestById);
 
 // Update event request status (admin only)
-router.put('/:id/status', protect, isAdmin, updateEventRequestStatus);
+router.put('/:id/status', protect, admin, updateEventRequestStatus);
 
 // Delete an event request
 router.delete('/:id', protect, deleteEventRequest);

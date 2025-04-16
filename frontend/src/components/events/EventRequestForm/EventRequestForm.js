@@ -1,6 +1,6 @@
 // src/components/events/EventRequestForm/EventRequestForm.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './EventRequestForm.css';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -67,6 +67,7 @@ const EventRequestForm = () => {
       // }
 
       // Simulating API call
+      console.log("Submitting event request:", formData);
       setTimeout(() => {
         setIsLoading(false);
         setSuccess(true);
@@ -80,6 +81,20 @@ const EventRequestForm = () => {
 
   const handleViewRequests = () => {
     navigate('/my-event-requests');
+  };
+
+  // Make sure today's date is set as the minimum date for the event
+  const getMinDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    let month = today.getMonth() + 1;
+    let day = today.getDate();
+
+    // Format month and day to ensure two digits
+    month = month < 10 ? `0${month}` : month;
+    day = day < 10 ? `0${day}` : day;
+
+    return `${year}-${month}-${day}`;
   };
 
   if (success) {
@@ -150,6 +165,7 @@ const EventRequestForm = () => {
             onChange={handleChange}
             rows="5"
             required
+            placeholder="Provide a detailed description of your event, including what attendees can expect"
           ></textarea>
         </div>
 
@@ -162,6 +178,7 @@ const EventRequestForm = () => {
               name="date"
               value={formData.date}
               onChange={handleChange}
+              min={getMinDate()}
               required
             />
           </div>

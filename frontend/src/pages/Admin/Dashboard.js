@@ -1,7 +1,7 @@
 // src/pages/Admin/Dashboard.js
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Dashboard.css';
+import { Link } from 'react-router-dom';
+import './Admin.css';
 import { useAuth } from '../../hooks/useAuth';
 
 const AdminDashboard = () => {
@@ -12,16 +12,9 @@ const AdminDashboard = () => {
     revenue: 0
   });
   const [isLoading, setIsLoading] = useState(true);
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    // Check if user is authenticated and has admin role
-    if (!isAuthenticated || (user && user.role !== 'admin')) {
-      navigate('/login');
-      return;
-    }
-
     // Fetch admin dashboard data
     const fetchDashboardData = async () => {
       try {
@@ -43,7 +36,7 @@ const AdminDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [isAuthenticated, user, navigate]);
+  }, []);
 
   if (isLoading) {
     return <div className="admin-loading">Loading dashboard...</div>;
@@ -51,7 +44,8 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      <h1>Admin Dashboard</h1>
+      <h1>Welcome, {currentUser?.username || 'Admin'}</h1>
+      <p className="dashboard-subtitle">Here's an overview of your platform's performance</p>
       
       <div className="admin-stats">
         <div className="stat-card">
@@ -72,17 +66,18 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="admin-actions">
+      <div className="admin-actions-section">
         <h2>Quick Actions</h2>
         <div className="action-buttons">
-          <button className="admin-button">Manage Users</button>
-          <button className="admin-button">Manage Products</button>
-          <button className="admin-button">View Orders</button>
-          <button className="admin-button">Site Settings</button>
+          <Link to="/admin/users" className="admin-button">Manage Users</Link>
+          <Link to="/admin/products" className="admin-button">Manage Products</Link>
+          <Link to="/admin/orders" className="admin-button">View Orders</Link>
+          <Link to="/admin/event-requests" className="admin-button">Review Event Requests</Link>
+          <Link to="/admin/settings" className="admin-button">Site Settings</Link>
         </div>
       </div>
 
-      <div className="recent-activity">
+      <div className="recent-activity-section">
         <h2>Recent Activity</h2>
         <div className="activity-list">
           <div className="activity-item">
@@ -95,6 +90,10 @@ const AdminDashboard = () => {
           </div>
           <div className="activity-item">
             <p className="activity-time">Yesterday</p>
+            <p className="activity-description">New event request submitted: "Modern Art Workshop"</p>
+          </div>
+          <div className="activity-item">
+            <p className="activity-time">2 days ago</p>
             <p className="activity-description">Product "Abstract Art" updated</p>
           </div>
         </div>

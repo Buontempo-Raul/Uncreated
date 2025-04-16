@@ -84,7 +84,7 @@ const getEventRequestById = async (req, res) => {
     }
 
     // Check if the user is the creator or an admin
-    if (eventRequest.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    if (eventRequest.user._id.toString() !== req.user._id.toString() && !req.user.admin) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to access this event request'
@@ -153,7 +153,7 @@ const deleteEventRequest = async (req, res) => {
     }
     
     // Check if the user is the creator or an admin
-    if (eventRequest.user.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    if (eventRequest.user.toString() !== req.user._id.toString() && !req.user.admin) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to delete this event request'

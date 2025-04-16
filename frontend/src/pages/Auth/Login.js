@@ -1,6 +1,6 @@
 // src/pages/Auth/Login.js
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import './Auth.css';
 
@@ -9,8 +9,23 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/';
+      
+      // If user is admin, redirect to admin dashboard
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate(from);
+      }
+    }
+  }, [isAuthenticated, isAdmin, navigate, location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +36,8 @@ const Login = () => {
       const result = await login(email, password);
       
       if (result.success) {
-        navigate('/');
+        // Navigation will happen in the useEffect above
+        console.log("Login successful, redirecting...");
       } else {
         setError(result.message || 'Invalid email or password');
       }
@@ -74,6 +90,12 @@ const Login = () => {
         
         <div className="auth-footer">
           <p>Don't have an account? <Link to="/register">Register</Link></p>
+        </div>
+        
+        {/* Dev/Testing Info */}
+        <div className="auth-footer" style={{marginTop: '1rem', padding: '1rem', backgroundColor: '#f0f0f0', borderRadius: '4px'}}>
+          <p><strong>For Development:</strong></p>
+          <p>Admin login: admin@uncreated.com / admin123</p>
         </div>
       </div>
     </div>
