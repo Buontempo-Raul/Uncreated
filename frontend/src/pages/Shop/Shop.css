@@ -3,11 +3,19 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  box-sizing: border-box;
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
 .shop-title {
-  text-align: center;
-  margin-bottom: 2rem;
+  text-align: left;
+  margin-bottom: 0;
   color: var(--text-color);
 }
 
@@ -39,11 +47,17 @@
   font-size: 0.9rem;
 }
 
-.artworks-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+div.artworks-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
   gap: 2rem;
   margin-top: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+  grid-auto-flow: row;
+  min-height: 200px;
+  /* Temporary outline to debug grid boundaries */
+  /* outline: 1px solid red; */
 }
 
 .artwork-card {
@@ -52,11 +66,9 @@
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.artwork-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .artwork-image {
@@ -77,6 +89,9 @@
 
 .artwork-details {
   padding: 1rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .artwork-title {
@@ -114,10 +129,17 @@
   margin-bottom: 1rem;
 }
 
+.artwork-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .view-button {
   display: block;
-  background-color: var(--primary-color);
-  color: white;
+  background-color: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
   text-align: center;
   padding: 0.5rem;
   border-radius: 4px;
@@ -127,7 +149,7 @@
 }
 
 .view-button:hover {
-  background-color: #8a5ce6;
+  background-color: rgba(169, 112, 255, 0.1);
 }
 
 .loading {
@@ -144,7 +166,26 @@
   grid-column: 1 / -1;
 }
 
+/* Fallback flexbox layout if grid fails */
+@supports not (display: grid) {
+  div.artworks-grid {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .artwork-card {
+    flex: 0 0 calc(33.333% - 1.33rem); /* 3 cards per row, accounting for gap */
+    max-width: calc(33.333% - 1.33rem);
+  }
+}
+
 @media screen and (max-width: 768px) {
+  .shop-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
   .shop-filters {
     flex-direction: column;
     align-items: center;
@@ -155,7 +196,28 @@
     max-width: 400px;
   }
   
-  .artworks-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  div.artworks-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  }
+  
+  /* Adjust flexbox fallback for smaller screens */
+  @supports not (display: grid) {
+    .artwork-card {
+      flex: 0 0 calc(50% - 1rem); /* 2 cards per row */
+      max-width: calc(50% - 1rem);
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  div.artworks-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  }
+  
+  @supports not (display: grid) {
+    .artwork-card {
+      flex: 0 0 100%; /* 1 card per row on very small screens */
+      max-width: 100%;
+    }
   }
 }

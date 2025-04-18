@@ -1,7 +1,10 @@
 // src/pages/Shop/Shop.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import './Shop.css';
+import Cart from '../../components/shop/Cart/Cart';
+import AddToCartButton from '../../components/shop/AddToCartButton/AddToCartButton';
 // Uncomment when ready to use API
 // import { artworkAPI } from '../../services/api';
 
@@ -126,7 +129,10 @@ const Shop = () => {
 
   return (
     <div className="shop-container">
-      <h1 className="shop-title">Explore Artworks</h1>
+      <div className="shop-header">
+        <h1 className="shop-title">Explore Artworks</h1>
+        <Cart />
+      </div>
       
       <div className="shop-filters">
         <div className="filter-group">
@@ -197,7 +203,7 @@ const Shop = () => {
                   </p>
                   <p className="artwork-category">{artwork.category}</p>
                   <p className="artwork-price">${artwork.price.toFixed(2)}</p>
-                  <Link to={`/artwork/${artwork._id}`} className="view-button">
+                  <Link to={`/shop/product/${artwork._id}`} className="view-button">
                     View Details
                   </Link>
                 </div>
