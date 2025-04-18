@@ -1,10 +1,9 @@
 // src/pages/Profile/Profile.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import './Profile.css';
-// Uncomment when ready to use API
-// import { userAPI } from '../../services/api';
-// import useAuth from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 // Temporary user data - Replace with API calls when ready
 const tempUser = {
@@ -67,14 +66,22 @@ const Profile = () => {
   const [artworks, setArtworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('artworks');
+  const [activeTab, setActiveTab] = useState('Artworks');
   
-  // Uncomment when ready to use authentication
-  // const { user: currentUser } = useAuth();
-  // const isOwnProfile = currentUser && currentUser.username === username;
-
-  // Temporary - for development
-  const isOwnProfile = username === 'artistic_soul';
+  // Add state for edit modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    username: '',
+    bio: '',
+    website: '',
+    profileImage: ''
+  });
+  
+  // Use auth hook
+  const { currentUser } = useAuth();
+  
+  // Check if the profile belongs to the current user
+  const isOwnProfile = currentUser && (currentUser.username === username);
 
   useEffect(() => {
     // Function to fetch user profile
@@ -90,15 +97,33 @@ const Profile = () => {
         // if (userResponse.data.success && artworksResponse.data.success) {
         //   setUser(userResponse.data.user);
         //   setArtworks(artworksResponse.data.artworks);
+        //   
+        //   // Set initial form data for editing
+        //   if (isOwnProfile) {
+        //     setEditFormData({
+        //       username: userResponse.data.user.username,
+        //       bio: userResponse.data.user.bio || '',
+        //       website: userResponse.data.user.website || '',
+        //       profileImage: userResponse.data.user.profileImage || ''
+        //     });
+        //   }
         // } else {
         //   setError('Failed to load profile');
         // }
 
         // Temporary - using mock data
-        // Simulate API delay
         setTimeout(() => {
           setUser(tempUser);
           setArtworks(tempArtworks);
+          
+          // Set initial form data for editing
+          setEditFormData({
+            username: tempUser.username,
+            bio: tempUser.bio || '',
+            website: tempUser.website || '',
+            profileImage: tempUser.profileImage || ''
+          });
+          
           setLoading(false);
         }, 1000);
       } catch (error) {
@@ -109,18 +134,94 @@ const Profile = () => {
     };
 
     fetchUserProfile();
-  }, [username]);
+  }, [username, isOwnProfile]);
+
+  // Handle change in edit form fields
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData({
+      ...editFormData,
+      [name]: value
+    });
+  };
+
+  // Handle profile image change
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // In a real app, you'd upload this file to your server and get a URL back
+      // For now, we'll create a local URL for preview purposes
+      const imageUrl = URL.createObjectURL(file);
+      setEditFormData({
+        ...editFormData,
+        profileImage: imageUrl
+      });
+    }
+  };
+
+  // Handle form submission
+  const handleSubmitEdit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      // In a real app, you'd make an API call to update the profile
+      // const response = await userAPI.updateProfile(editFormData);
+      
+      // Simulate successful update for now
+      console.log('Updating profile with:', editFormData);
+      
+      // Update local user state with the edited data
+      setUser({
+        ...user,
+        username: editFormData.username,
+        bio: editFormData.bio,
+        website: editFormData.website,
+        profileImage: editFormData.profileImage
+      });
+      
+      // Close the modal
+      setShowEditModal(false);
+      
+      // Show a success message
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
+  };
+
+  const handleImageInputClick = () => {
+    // Trigger click on the hidden file input
+    document.getElementById('profile-image-input').click();
+  };
 
   if (loading) {
-    return <div className="loading">Loading profile...</div>;
+    return (
+      <div className="profile-loading-container">
+        <div className="profile-loader"></div>
+        <p>Loading profile...</p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error-container">{error}</div>;
+    return (
+      <div className="profile-error-container">
+        <h2>Error</h2>
+        <p>{error}</p>
+        <Link to="/" className="profile-home-link">Return to Home</Link>
+      </div>
+    );
   }
 
   if (!user) {
-    return <div className="error-container">User not found</div>;
+    return (
+      <div className="profile-error-container">
+        <h2>User Not Found</h2>
+        <p>The user you're looking for doesn't exist or has been removed.</p>
+        <Link to="/" className="profile-home-link">Return to Home</Link>
+      </div>
+    );
   }
 
   // Format date
@@ -131,114 +232,304 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
-      <div className="profile-header">
-        <div className="profile-image">
-          <img src={user.profileImage} alt={user.username} />
-        </div>
-        <div className="profile-info">
-          <h1 className="username">{user.username}</h1>
-          {user.isArtist && <span className="artist-badge">Artist</span>}
-          <p className="bio">{user.bio}</p>
-          {user.website && (
-            <p className="website">
-              <a href={user.website} target="_blank" rel="noopener noreferrer">
-                {user.website}
-              </a>
-            </p>
+      <motion.div 
+        className="profile-header"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="profile-avatar-container">
+          <img 
+            src={user.profileImage} 
+            alt={user.username} 
+            className="profile-avatar"
+          />
+          {user.isArtist && (
+            <span className="profile-artist-badge">Artist</span>
           )}
-          <p className="joined-date">Joined {formatDate(user.createdAt)}</p>
+        </div>
+        
+        <div className="profile-info">
+          <motion.h1 
+            className="profile-username"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            {user.username}
+          </motion.h1>
+          
+          <motion.div 
+            className="profile-meta"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <span className="profile-joined-date">
+              <i className="profile-icon calendar-icon"></i>
+              Joined {formatDate(user.createdAt)}
+            </span>
+            
+            {user.website && (
+              <a 
+                href={user.website} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="profile-website"
+              >
+                <i className="profile-icon website-icon"></i>
+                {user.website.replace(/(^\w+:|^)\/\//, '')}
+              </a>
+            )}
+          </motion.div>
+          
+          <motion.p 
+            className="profile-bio"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            {user.bio}
+          </motion.p>
           
           {isOwnProfile && (
-            <Link to="/profile/edit" className="edit-profile-btn">
-              Edit Profile
-            </Link>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <button 
+                className="profile-edit-button"
+                onClick={() => setShowEditModal(true)}
+              >
+                Edit Profile
+              </button>
+            </motion.div>
           )}
         </div>
-      </div>
+      </motion.div>
       
-      <div className="profile-tabs">
-        <button 
-          className={`tab-btn ${activeTab === 'artworks' ? 'active' : ''}`}
-          onClick={() => setActiveTab('artworks')}
+      <div className="profile-content-container">
+        <motion.div 
+          className="profile-tabs"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
         >
-          Artworks
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}
-          onClick={() => setActiveTab('favorites')}
-        >
-          Favorites
-        </button>
-        {isOwnProfile && (
           <button 
-            className={`tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-            onClick={() => setActiveTab('orders')}
+            className={`profile-tab ${activeTab === 'Artworks' ? 'active' : ''}`}
+            onClick={() => setActiveTab('Artworks')}
           >
-            Orders
+            <span className="profile-tab-icon artworks-icon"></span>
+            Artworks
+            <span className="profile-tab-count">{artworks.length}</span>
           </button>
-        )}
+          
+          <button 
+            className={`profile-tab ${activeTab === 'Favorites' ? 'active' : ''}`}
+            onClick={() => setActiveTab('Favorites')}
+          >
+            <span className="profile-tab-icon favorites-icon"></span>
+            Favorites
+          </button>
+          
+          {isOwnProfile && (
+            <button 
+              className={`profile-tab ${activeTab === 'Orders' ? 'active' : ''}`}
+              onClick={() => setActiveTab('Orders')}
+            >
+              <span className="profile-tab-icon orders-icon"></span>
+              Orders
+            </button>
+          )}
+        </motion.div>
+        
+        <motion.div 
+          className="profile-content"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
+        >
+          {activeTab === 'Artworks' && (
+            <div className="profile-tab-content">
+              {artworks.length > 0 ? (
+                <div className="profile-artworks-grid">
+                  {artworks.map((artwork) => (
+                    <motion.div 
+                      key={artwork._id} 
+                      className="profile-artwork-card"
+                      whileHover={{ 
+                        y: -10,
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.15)'
+                      }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Link to={`/artwork/${artwork._id}`} className="profile-artwork-image-link">
+                        <div className="profile-artwork-image-container">
+                          <img 
+                            src={artwork.images[0]} 
+                            alt={artwork.title} 
+                            className="profile-artwork-image"
+                          />
+                          <div className="profile-artwork-category">
+                            {artwork.category}
+                          </div>
+                        </div>
+                      </Link>
+                      
+                      <div className="profile-artwork-details">
+                        <Link to={`/artwork/${artwork._id}`} className="profile-artwork-title-link">
+                          <h3 className="profile-artwork-title">{artwork.title}</h3>
+                        </Link>
+                        
+                        <p className="profile-artwork-description">{artwork.description}</p>
+                        
+                        <div className="profile-artwork-footer">
+                          <span className="profile-artwork-price">
+                            ${artwork.price.toFixed(2)}
+                          </span>
+                          
+                          <span className={`profile-artwork-status ${artwork.forSale ? 'for-sale' : 'not-for-sale'}`}>
+                            {artwork.forSale ? 'For Sale' : 'Not For Sale'}
+                          </span>
+                        </div>
+                        
+                        <Link to={`/artwork/${artwork._id}`} className="profile-artwork-view-button">
+                          View Details
+                        </Link>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="profile-empty-state">
+                  <div className="profile-empty-icon artworks-empty-icon"></div>
+                  <h3>No Artworks Yet</h3>
+                  <p>There are no artworks to display at this time.</p>
+                  
+                  {isOwnProfile && (
+                    <Link to="/artwork/create" className="profile-create-button">
+                      Create Your First Artwork
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {activeTab === 'Favorites' && (
+            <div className="profile-tab-content">
+              <div className="profile-empty-state">
+                <div className="profile-empty-icon favorites-empty-icon"></div>
+                <h3>No Favorites Yet</h3>
+                <p>When you find artworks you love, you can save them here.</p>
+                
+                <Link to="/shop" className="profile-browse-button">
+                  Browse Artworks
+                </Link>
+              </div>
+            </div>
+          )}
+          
+          {isOwnProfile && activeTab === 'Orders' && (
+            <div className="profile-tab-content">
+              <div className="profile-empty-state">
+                <div className="profile-empty-icon orders-empty-icon"></div>
+                <h3>No Orders Yet</h3>
+                <p>Your purchase history will appear here once you've made an order.</p>
+                
+                <Link to="/shop" className="profile-browse-button">
+                  Shop Now
+                </Link>
+              </div>
+            </div>
+          )}
+        </motion.div>
       </div>
       
-      <div className="profile-content">
-        {activeTab === 'artworks' && (
-          <div className="artworks-tab">
-            {artworks.length > 0 ? (
-              <div className="artworks-grid">
-                {artworks.map((artwork) => (
-                  <div key={artwork._id} className="artwork-card">
-                    <Link to={`/artwork/${artwork._id}`} className="artwork-image">
-                      <img src={artwork.images[0]} alt={artwork.title} />
-                    </Link>
-                    <div className="artwork-details">
-                      <h3 className="artwork-title">
-                        <Link to={`/artwork/${artwork._id}`}>{artwork.title}</Link>
-                      </h3>
-                      <p className="artwork-category">{artwork.category}</p>
-                      <div className="artwork-footer">
-                        <span className="artwork-price">${artwork.price.toFixed(2)}</span>
-                        <span className={`artwork-status ${artwork.forSale ? 'for-sale' : 'sold'}`}>
-                          {artwork.forSale ? 'For Sale' : 'Not For Sale'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="edit-profile-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Profile</h2>
+            <button className="close-modal" onClick={() => setShowEditModal(false)}>×</button>
+            
+            <form onSubmit={handleSubmitEdit} className="edit-profile-form">
+              <div className="form-group">
+                <label>Profile Picture</label>
+                <div className="profile-image-upload">
+                  <img 
+                    src={editFormData.profileImage} 
+                    alt="Profile Preview" 
+                    className="profile-image-preview" 
+                  />
+                  <input 
+                    type="file" 
+                    id="profile-image-input"
+                    accept="image/*" 
+                    onChange={handleProfileImageChange}
+                    className="profile-image-input"
+                  />
+                  <button 
+                    type="button" 
+                    className="change-image-btn"
+                    onClick={handleImageInputClick}
+                  >
+                    Choose Image
+                  </button>
+                </div>
               </div>
-            ) : (
-              <div className="no-content">
-                <p>No artworks found</p>
-                {isOwnProfile && (
-                  <Link to="/artwork/create" className="create-btn">
-                    Create Artwork
-                  </Link>
-                )}
+              
+              <div className="form-group">
+                <label htmlFor="username">Username</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={editFormData.username}
+                  onChange={handleEditFormChange}
+                  required
+                />
+                <small>Note: Username changes may not be allowed if already taken.</small>
               </div>
-            )}
+              
+              <div className="form-group">
+                <label htmlFor="bio">Bio</label>
+                <textarea
+                  id="bio"
+                  name="bio"
+                  value={editFormData.bio}
+                  onChange={handleEditFormChange}
+                  rows="4"
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="website">Website</label>
+                <input
+                  type="url"
+                  id="website"
+                  name="website"
+                  value={editFormData.website}
+                  onChange={handleEditFormChange}
+                  placeholder="https://example.com"
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button type="submit" className="save-profile-btn">Save Changes</button>
+                <button 
+                  type="button" 
+                  className="cancel-btn" 
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-        
-        {activeTab === 'favorites' && (
-          <div className="favorites-tab">
-            <div className="no-content">
-              <p>No favorites yet</p>
-              <Link to="/shop" className="browse-btn">
-                Browse Shop
-              </Link>
-            </div>
-          </div>
-        )}
-        
-        {isOwnProfile && activeTab === 'orders' && (
-          <div className="orders-tab">
-            <div className="no-content">
-              <p>No orders yet</p>
-              <Link to="/shop" className="browse-btn">
-                Browse Shop
-              </Link>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
