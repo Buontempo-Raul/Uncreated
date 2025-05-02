@@ -1,6 +1,7 @@
 // backend/controllers/shopController.js
 const Order = require('../models/Order');
 const Artwork = require('../models/Artwork');
+const User = require('../models/User');
 
 // @desc    Create new order
 // @route   POST /api/shop/orders
@@ -207,11 +208,170 @@ const getFeaturedArtworks = async (req, res) => {
   }
 };
 
+// @desc    Get recent artworks for shop
+// @route   GET /api/shop/recent
+// @access  Public
+const getRecentArtworks = async (req, res) => {
+  try {
+    const recentArtworks = await Artwork.find({
+      forSale: true,
+      isSold: false
+    })
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .populate('creator', 'username profileImage');
+
+    res.json({
+      success: true,
+      artworks: recentArtworks
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get popular artworks for shop
+// @route   GET /api/shop/popular
+// @access  Public
+const getPopularArtworks = async (req, res) => {
+  try {
+    const popularArtworks = await Artwork.find({
+      forSale: true,
+      isSold: false
+    })
+      .sort({ views: -1 })
+      .limit(8)
+      .populate('creator', 'username profileImage');
+
+    res.json({
+      success: true,
+      artworks: popularArtworks
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Add item to cart
+// @route   POST /api/shop/cart
+// @access  Private
+const addToCart = async (req, res) => {
+  try {
+    const { artworkId, quantity = 1 } = req.body;
+    
+    // Check if artwork exists and is for sale
+    const artwork = await Artwork.findOne({ 
+      _id: artworkId,
+      forSale: true,
+      isSold: false
+    });
+    
+    if (!artwork) {
+      return res.status(404).json({
+        success: false,
+        message: 'Artwork not found or not available for purchase'
+      });
+    }
+    
+    // Get user cart (or create if it doesn't exist)
+    let cart = await Cart.findOne({ user: req.user._id });
+    
+    if (!cart) {
+      cart = new Cart({
+        user: req.user._id,
+        items: []
+      });
+    }
+    
+    // Check if item already in cart
+    const itemIndex = cart.items.findIndex(item => 
+      item.artwork.toString() === artworkId
+    );
+    
+    if (itemIndex > -1) {
+      // Update quantity if item exists
+      cart.items[itemIndex].quantity = quantity;
+    } else {
+      // Add new item
+      cart.items.push({
+        artwork: artworkId,
+        quantity,
+        price: artwork.price
+      });
+    }
+    
+    // Calculate totals
+    cart.totalItems = cart.items.reduce((total, item) => total + item.quantity, 0);
+    cart.totalPrice = cart.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    
+    await cart.save();
+    
+    res.json({
+      success: true,
+      cart
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Get user cart
+// @route   GET /api/shop/cart
+// @access  Private
+const getCart = async (req, res) => {
+  try {
+    const cart = await Cart.findOne({ user: req.user._id })
+      .populate({
+        path: 'items.artwork',
+        select: 'title images price category',
+        populate: {
+          path: 'creator',
+          select: 'username profileImage'
+        }
+      });
+    
+    if (!cart) {
+      return res.json({
+        success: true,
+        cart: {
+          items: [],
+          totalItems: 0,
+          totalPrice: 0
+        }
+      });
+    }
+    
+    res.json({
+      success: true,
+      cart
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Export all methods
 module.exports = {
   createOrder,
   getOrderById,
   getMyOrders,
   updateOrderToPaid,
   updateOrderToDelivered,
-  getFeaturedArtworks
+  getFeaturedArtworks,
+  getRecentArtworks,
+  getPopularArtworks,
+  addToCart,
+  getCart
 };

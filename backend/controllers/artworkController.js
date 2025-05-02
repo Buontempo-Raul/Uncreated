@@ -7,21 +7,38 @@ const User = require('../models/User');
 // @access  Public
 const getArtworks = async (req, res) => {
   try {
-    const { category, price, sortBy, limit = 10, page = 1 } = req.query;
+    const { 
+      category, 
+      priceRange, 
+      sortBy, 
+      limit = 10, 
+      page = 1,
+      search 
+    } = req.query;
+    
     const query = {};
 
     // Filter by category
-    if (category) {
+    if (category && category !== 'all') {
       query.category = category;
     }
 
     // Filter by price range
-    if (price) {
-      const [min, max] = price.split('-');
-      query.price = { $gte: min || 0 };
+    if (priceRange) {
+      const [min, max] = priceRange.split('-');
+      query.price = { $gte: parseFloat(min) || 0 };
       if (max) {
-        query.price.$lte = max;
+        query.price.$lte = parseFloat(max);
       }
+    }
+
+    // Search functionality
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } }
+      ];
     }
 
     // Only show artworks for sale
@@ -273,11 +290,38 @@ const likeArtwork = async (req, res) => {
   }
 };
 
+// @desc    Get featured artworks
+// @route   GET /api/artworks/featured
+// @access  Public
+const getFeaturedArtworks = async (req, res) => {
+  try {
+    const featuredArtworks = await Artwork.find({
+      forSale: true,
+      isSold: false
+    })
+      .sort({ views: -1, likes: -1 })
+      .limit(6)
+      .populate('creator', 'username profileImage');
+
+    res.json({
+      success: true,
+      artworks: featuredArtworks
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 module.exports = {
   getArtworks,
   getArtworkById,
   createArtwork,
   updateArtwork,
   deleteArtwork,
-  likeArtwork
+  likeArtwork,
+  getFeaturedArtworks,
+  getCategories
 };

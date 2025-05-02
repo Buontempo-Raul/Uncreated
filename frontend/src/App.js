@@ -5,6 +5,7 @@ import './styles/globals.css';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 
 // Pages
 import Home from './pages/Home/Home';
@@ -29,41 +30,43 @@ import AdminLayout from './components/admin/Layout/AdminLayout';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app">
-          <Navbar />
-          <main className="main-content">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              
-              {/* Protected User Routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/profile/:username" element={<Profile />} />
-              </Route>
-              
-              {/* Protected Admin Routes */}
-              <Route element={<ProtectedRoute adminOnly={true} />}>
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="settings" element={<AdminSettings />} />
+      <CartProvider>
+        <Router>
+          <div className="app">
+            <Navbar />
+            <main className="main-content">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/explore" element={<Explore />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                
+                {/* Protected User Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/profile/:username" element={<Profile />} />
                 </Route>
-              </Route>
-              
-              {/* 404 Not Found */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
+                
+                {/* Protected Admin Routes */}
+                <Route element={<ProtectedRoute adminOnly={true} />}>
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                  </Route>
+                </Route>
+                
+                {/* 404 Not Found */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </Router>
+      </CartProvider>
     </AuthProvider>
   );
 }

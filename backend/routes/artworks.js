@@ -1,4 +1,5 @@
-// backend/routes/artworks.js
+// backend/routes/artworks.js - Enhanced with new routes
+
 const express = require('express');
 const router = express.Router();
 const { 
@@ -7,16 +8,26 @@ const {
   createArtwork,
   updateArtwork,
   deleteArtwork,
-  likeArtwork
+  likeArtwork,
+  getFeaturedArtworks,
+  getCategories
 } = require('../controllers/artworkController');
 const { protect, isArtist } = require('../middleware/authMiddleware');
 
+// Public routes
 // Get all artworks
 router.get('/', getArtworks);
+
+// Get categories
+router.get('/categories', getCategories);
+
+// Get featured artworks
+router.get('/featured', getFeaturedArtworks);
 
 // Get single artwork
 router.get('/:id', getArtworkById);
 
+// Protected routes
 // Create new artwork
 router.post('/', protect, isArtist, createArtwork);
 

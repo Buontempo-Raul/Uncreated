@@ -1,85 +1,8 @@
-// src/pages/Shop/Shop.js
+// frontend/src/pages/Shop/Shop.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Shop.css';
-// Uncomment when ready to use API
-// import { artworkAPI } from '../../services/api';
-
-// Temporary artwork data - Replace with API calls when ready
-const tempArtworks = [
-  {
-    _id: '1',
-    title: 'Abstract Harmony',
-    description: 'A vibrant exploration of color and form.',
-    images: ['https://via.placeholder.com/400x300?text=Abstract+Harmony'],
-    price: 299.99,
-    category: 'painting',
-    creator: {
-      username: 'artistic_soul',
-      profileImage: 'https://via.placeholder.com/50x50'
-    }
-  },
-  {
-    _id: '2',
-    title: 'Urban Landscape',
-    description: 'Cityscape captured through a unique perspective.',
-    images: ['https://via.placeholder.com/400x300?text=Urban+Landscape'],
-    price: 349.99,
-    category: 'photography',
-    creator: {
-      username: 'city_explorer',
-      profileImage: 'https://via.placeholder.com/50x50'
-    }
-  },
-  {
-    _id: '3',
-    title: 'Serenity',
-    description: 'A peaceful nature-inspired sculpture.',
-    images: ['https://via.placeholder.com/400x300?text=Serenity'],
-    price: 499.99,
-    category: 'sculpture',
-    creator: {
-      username: 'nature_artist',
-      profileImage: 'https://via.placeholder.com/50x50'
-    }
-  },
-  {
-    _id: '4',
-    title: 'Digital Dreams',
-    description: 'A futuristic digital artwork exploring imagination.',
-    images: ['https://via.placeholder.com/400x300?text=Digital+Dreams'],
-    price: 199.99,
-    category: 'digital',
-    creator: {
-      username: 'future_creative',
-      profileImage: 'https://via.placeholder.com/50x50'
-    }
-  },
-  {
-    _id: '5',
-    title: 'Emotional Expressions',
-    description: 'A portrait series capturing human emotions.',
-    images: ['https://via.placeholder.com/400x300?text=Emotional+Expressions'],
-    price: 399.99,
-    category: 'painting',
-    creator: {
-      username: 'emotion_artist',
-      profileImage: 'https://via.placeholder.com/50x50'
-    }
-  },
-  {
-    _id: '6',
-    title: 'Textured Patterns',
-    description: 'Mixed media artwork with unique textures and patterns.',
-    images: ['https://via.placeholder.com/400x300?text=Textured+Patterns'],
-    price: 279.99,
-    category: 'mixed media',
-    creator: {
-      username: 'texture_master',
-      profileImage: 'https://via.placeholder.com/50x50'
-    }
-  }
-];
+import api from '../../services/api';
 
 const Shop = () => {
   const [artworks, setArtworks] = useState([]);
@@ -89,24 +12,36 @@ const Shop = () => {
     priceRange: '',
     sortBy: 'latest'
   });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0
+  });
 
   useEffect(() => {
     // Function to fetch artworks
     const fetchArtworks = async () => {
       setLoading(true);
       try {
-        // Uncomment when ready to use API
-        // const response = await artworkAPI.getArtworks(filter);
-        // if (response.data.success) {
-        //   setArtworks(response.data.artworks);
-        // }
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (filter.category) params.append('category', filter.category);
+        if (filter.priceRange) params.append('priceRange', filter.priceRange);
+        if (filter.sortBy) params.append('sortBy', filter.sortBy);
+        params.append('page', pagination.currentPage);
+        params.append('limit', 12); // Items per page
 
-        // Temporary - using mock data
-        // Simulate API delay
-        setTimeout(() => {
-          setArtworks(tempArtworks);
-          setLoading(false);
-        }, 1000);
+        const response = await api.get(`/artworks?${params.toString()}`);
+        
+        if (response.data.success) {
+          setArtworks(response.data.artworks);
+          setPagination({
+            currentPage: response.data.currentPage,
+            totalPages: response.data.pages,
+            totalItems: response.data.count
+          });
+        }
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching artworks:', error);
         setLoading(false);
@@ -114,7 +49,7 @@ const Shop = () => {
     };
 
     fetchArtworks();
-  }, [filter]);
+  }, [filter, pagination.currentPage]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -122,6 +57,20 @@ const Shop = () => {
       ...filter,
       [name]: value
     });
+    // Reset to page 1 when filter changes
+    setPagination({
+      ...pagination,
+      currentPage: 1
+    });
+  };
+
+  const handlePageChange = (page) => {
+    setPagination({
+      ...pagination,
+      currentPage: page
+    });
+    // Scroll to top when changing page
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -183,30 +132,61 @@ const Shop = () => {
       {loading ? (
         <div className="loading">Loading artworks...</div>
       ) : (
-        <div className="artworks-grid">
-          {artworks.length > 0 ? (
-            artworks.map((artwork) => (
-              <div key={artwork._id} className="artwork-card">
-                <div className="artwork-image">
-                  <img src={artwork.images[0]} alt={artwork.title} />
+        <>
+          <div className="artworks-grid">
+            {artworks.length > 0 ? (
+              artworks.map((artwork) => (
+                <div key={artwork._id} className="artwork-card">
+                  <div className="artwork-image">
+                    <img src={artwork.images[0]} alt={artwork.title} />
+                  </div>
+                  <div className="artwork-details">
+                    <h3 className="artwork-title">{artwork.title}</h3>
+                    <p className="artwork-creator">
+                      by <Link to={`/profile/${artwork.creator.username}`}>{artwork.creator.username}</Link>
+                    </p>
+                    <p className="artwork-category">{artwork.category}</p>
+                    <p className="artwork-price">${artwork.price.toFixed(2)}</p>
+                    <Link to={`/artwork/${artwork._id}`} className="view-button">
+                      View Details
+                    </Link>
+                  </div>
                 </div>
-                <div className="artwork-details">
-                  <h3 className="artwork-title">{artwork.title}</h3>
-                  <p className="artwork-creator">
-                    by <Link to={`/profile/${artwork.creator.username}`}>{artwork.creator.username}</Link>
-                  </p>
-                  <p className="artwork-category">{artwork.category}</p>
-                  <p className="artwork-price">${artwork.price.toFixed(2)}</p>
-                  <Link to={`/artwork/${artwork._id}`} className="view-button">
-                    View Details
-                  </Link>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="no-results">No artworks found matching your criteria.</div>
+              ))
+            ) : (
+              <div className="no-results">No artworks found matching your criteria.</div>
+            )}
+          </div>
+          
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="pagination">
+              <button 
+                className="pagination-btn"
+                disabled={pagination.currentPage === 1}
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+              >
+                Previous
+              </button>
+              {[...Array(pagination.totalPages).keys()].map(x => (
+                <button
+                  key={x + 1}
+                  className={`pagination-btn ${pagination.currentPage === x + 1 ? 'active' : ''}`}
+                  onClick={() => handlePageChange(x + 1)}
+                >
+                  {x + 1}
+                </button>
+              ))}
+              <button 
+                className="pagination-btn"
+                disabled={pagination.currentPage === pagination.totalPages}
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+              >
+                Next
+              </button>
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
