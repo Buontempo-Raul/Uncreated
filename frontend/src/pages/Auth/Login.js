@@ -1,14 +1,14 @@
 // src/pages/Auth/Login.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import authService from '../../services/auth'; // Direct import of auth service
 import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { login, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -21,17 +21,32 @@ const Login = () => {
     }
     
     try {
-      const user = await login(email, password);
+      setIsLoading(true);
+      console.log('Sending login request with:', { email });
       
-      // Redirect based on user role
-      if (user.role === 'admin') {
-        navigate('/admin/dashboard');
+      // Use the auth service directly
+      const response = await authService.login({ email, password });
+      console.log('Login response:', response);
+      
+      if (response.success) {
+        // Get user data from response
+        const userData = response.user;
+        
+        // Redirect based on user role
+        if (userData.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/');
+        }
       } else {
-        navigate('/');
+        // Handle login failure
+        setErrorMessage(response.message || 'Login failed');
       }
     } catch (error) {
-      setErrorMessage('Invalid email or password');
       console.error('Login error:', error);
+      setErrorMessage('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,9 +87,9 @@ const Login = () => {
           <button 
             type="submit" 
             className="auth-button"
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
         </form>
         
@@ -88,9 +103,9 @@ const Login = () => {
         </div>
         
         <div className="auth-info">
-          <p>For admin access use:</p>
+          <p>For demo access use:</p>
           <p>Email: admin@example.com</p>
-          <p>Password: any password will work for this demo</p>
+          <p>Password: admin123</p>
         </div>
       </div>
     </div>

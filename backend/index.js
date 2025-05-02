@@ -33,12 +33,16 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const artworkRoutes = require('./routes/artworks');
 const shopRoutes = require('./routes/shop');
+const cors = require('cors');
+
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/artworks', artworkRoutes);
 app.use('/api/shop', shopRoutes);
+app.use(cors());
+
 
 // Simple test route
 app.get('/api/test', (req, res) => {

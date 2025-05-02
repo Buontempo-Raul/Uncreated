@@ -1,76 +1,77 @@
-// frontend/src/services/auth.js
-import { authAPI } from './api';
+// frontend/src/services/auth.js - Fix the auth service
+import api from './api';
 
-// Set user in local storage
-const setUserData = (userData) => {
-  localStorage.setItem('user', JSON.stringify(userData));
-  localStorage.setItem('token', userData.token);
-};
-
-// Remove user from local storage
-const removeUserData = () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-};
-
-// Get user from local storage
-const getUserFromStorage = () => {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+// Login user
+export const login = async (credentials) => {
+  try {
+    // Make the request to the correct endpoint
+    const response = await api.post('/auth/login', credentials);
+    
+    if (response.data.success) {
+      // Store token and user data
+      localStorage.setItem('token', response.data.user.token);
+      
+      // Store user without token
+      const userData = { ...response.data.user };
+      delete userData.token;
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Login error:', error);
+    if (error.response) {
+      return error.response.data;
+    }
+    return { success: false, message: 'Network error. Please try again later.' };
+  }
 };
 
 // Register user
 export const register = async (userData) => {
   try {
-    const response = await authAPI.register(userData);
+    const response = await api.post('/auth/register', userData);
+    
     if (response.data.success) {
-      setUserData(response.data.user);
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.user.token);
+      
+      // Store user data without token
+      const userDataCopy = { ...response.data.user };
+      delete userDataCopy.token;
+      localStorage.setItem('user', JSON.stringify(userDataCopy));
+      
+      // Set auth header for future requests
+      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.user.token}`;
     }
+    
     return response.data;
   } catch (error) {
-    throw error.response?.data || { success: false, message: 'Registration failed' };
-  }
-};
-
-// Login user
-export const login = async (credentials) => {
-  try {
-    const response = await authAPI.login(credentials);
-    if (response.data.success) {
-      setUserData(response.data.user);
+    console.error('Register error:', error);
+    if (error.response) {
+      return error.response.data;
     }
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { success: false, message: 'Login failed' };
+    return { 
+      success: false, 
+      message: 'Network error. Please try again later.' 
+    };
   }
 };
 
 // Logout user
 export const logout = () => {
-  removeUserData();
+  // Remove token from localStorage
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  
+  // Remove auth header
+  api.defaults.headers.common['Authorization'] = '';
+  
   return { success: true, message: 'Logged out successfully' };
 };
 
-// Get current user profile
-export const getCurrentUser = async () => {
-  try {
-    const response = await authAPI.getProfile();
-    return response.data;
-  } catch (error) {
-    throw error.response?.data || { success: false, message: 'Failed to get user profile' };
-  }
-};
-
-// Check if user is authenticated
-export const isAuthenticated = () => {
-  return !!localStorage.getItem('token');
-};
-
 export default {
-  register,
   login,
-  logout,
-  getCurrentUser,
-  isAuthenticated,
-  getUserFromStorage
+  register,
+  logout
 };

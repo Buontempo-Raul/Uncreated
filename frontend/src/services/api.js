@@ -1,9 +1,9 @@
-// src/services/api.js
+// frontend/src/services/api.js - Fix the base URL
 import axios from 'axios';
 
 // Create an axios instance with default configs
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: '/api',  // Use relative URL for proxying
   headers: {
     'Content-Type': 'application/json'
   }
@@ -29,14 +29,16 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    console.error('API Error:', error);
+    
     // Handle 401 unauthorized errors
     if (error.response && error.response.status === 401) {
       // Clear local storage
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       
-      // Redirect to login (this is a simple approach, for production you might want a more robust solution)
-      window.location.href = '/login';
+      // You might want to redirect to login here in a real app
+      // window.location.href = '/login';
     }
     
     return Promise.reject(error);

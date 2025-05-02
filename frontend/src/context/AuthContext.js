@@ -1,7 +1,7 @@
 // src/context/AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
-import userAPI from '../services/userAPI';
+import authService from '../services/auth'; // Import the auth service
 
 export const AuthContext = createContext();
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
           // Get user profile from the server
           try {
             // In a real production app, verify token here with the backend
-            const response = await api.get('/api/auth/profile');
+            const response = await api.get('/auth/profile');
             if (response.data.success) {
               setUser(response.data.user);
             } else {
@@ -61,29 +61,18 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      // Make API call to login
-      const response = await api.post('/api/auth/login', { email, password });
+      // Use the auth service for login
+      const response = await authService.login({ email, password });
       
-      if (response.data.success) {
-        const userData = response.data.user;
-        
-        // Store token in localStorage
-        localStorage.setItem('token', userData.token);
-        delete userData.token; // Don't include token in user object
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Set auth header for all future requests
-        api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-        
+      if (response.success) {
         // Update state
-        setUser(userData);
-        
-        return userData;
+        setUser(response.user);
+        return response.user;
       } else {
-        throw new Error(response.data.message || 'Login failed');
+        throw new Error(response.message || 'Login failed');
       }
     } catch (err) {
-      const message = err.response?.data?.message || err.message || 'An error occurred during login';
+      const message = err.message || 'An error occurred during login';
       setError(message);
       throw new Error(message);
     } finally {
@@ -96,59 +85,18 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      // Make API call to register
-      const response = await api.post('/api/auth/register', userData);
+      // Use the auth service for registration
+      const response = await authService.register(userData);
       
-      if (response.data.success) {
-        const userData = response.data.user;
-        
-        // Store token in localStorage
-        localStorage.setItem('token', userData.token);
-        delete userData.token; // Don't include token in user object
-        localStorage.setItem('user', JSON.stringify(userData));
-        
-        // Set auth header for all future requests
-        api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-        
+      if (response.success) {
         // Update state
-        setUser(userData);
-        
-        return userData;
+        setUser(response.user);
+        return response.user;
       } else {
-        throw new Error(response.data.message || 'Registration failed');
+        throw new Error(response.message || 'Registration failed');
       }
     } catch (err) {
-      const message = err.response?.data?.message || err.message || 'An error occurred during registration';
-      setError(message);
-      throw new Error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProfile = async (userData) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Use the userAPI service for profile updates
-      const response = await userAPI.updateUserProfile(userData);
-      
-      if (response.data.success) {
-        const updatedUser = response.data.user;
-        
-        // Update localStorage
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        // Update state
-        setUser(updatedUser);
-        
-        return updatedUser;
-      } else {
-        throw new Error(response.data.message || 'Profile update failed');
-      }
-    } catch (err) {
-      const message = err.response?.data?.message || err.message || 'An error occurred while updating profile';
+      const message = err.message || 'An error occurred during registration';
       setError(message);
       throw new Error(message);
     } finally {
@@ -157,13 +105,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // Remove token from localStorage
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    // Remove auth header
-    api.defaults.headers.common['Authorization'] = '';
-    
+    // Use the auth service for logout
+    authService.logout();
     // Clear user from state
     setUser(null);
   };
@@ -188,7 +131,6 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        updateProfile,
         clearError
       }}
     >
