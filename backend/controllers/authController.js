@@ -14,7 +14,7 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, firstName, lastName } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
@@ -22,7 +22,7 @@ const registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ 
         success: false, 
-        message: 'User already exists' 
+        message: userExists.email === email ? 'Email already in use' : 'Username already taken'
       });
     }
 
@@ -30,19 +30,31 @@ const registerUser = async (req, res) => {
     const user = await User.create({
       username,
       email,
-      password
+      password,
+      firstName,
+      lastName
     });
 
     if (user) {
+      // Generate token
+      const token = generateToken(user._id);
+      
       res.status(201).json({
         success: true,
         user: {
           _id: user._id,
           username: user.username,
           email: user.email,
-          isArtist: user.isArtist,
+          firstName: user.firstName,
+          lastName: user.lastName,
           profileImage: user.profileImage,
-          token: generateToken(user._id)
+          bio: user.bio,
+          website: user.website,
+          isArtist: user.isArtist,
+          role: user.role,
+          socialLinks: user.socialLinks,
+          createdAt: user.createdAt,
+          token
         }
       });
     } else {
@@ -52,6 +64,7 @@ const registerUser = async (req, res) => {
       });
     }
   } catch (error) {
+    console.error('Error in registerUser:', error);
     res.status(500).json({
       success: false,
       message: error.message
@@ -71,15 +84,25 @@ const loginUser = async (req, res) => {
 
     // Check if user exists and password matches
     if (user && (await user.matchPassword(password))) {
+      // Generate token
+      const token = generateToken(user._id);
+      
       res.json({
         success: true,
         user: {
           _id: user._id,
           username: user.username,
           email: user.email,
-          isArtist: user.isArtist,
+          firstName: user.firstName,
+          lastName: user.lastName,
           profileImage: user.profileImage,
-          token: generateToken(user._id)
+          bio: user.bio,
+          website: user.website,
+          isArtist: user.isArtist,
+          role: user.role,
+          socialLinks: user.socialLinks,
+          createdAt: user.createdAt,
+          token
         }
       });
     } else {
@@ -89,6 +112,7 @@ const loginUser = async (req, res) => {
       });
     }
   } catch (error) {
+    console.error('Error in loginUser:', error);
     res.status(500).json({
       success: false,
       message: error.message
@@ -101,29 +125,98 @@ const loginUser = async (req, res) => {
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    // Find user by ID from auth middleware
+    const user = await User.findById(req.user._id)
+      .select('-password -__v')
+      .populate('followers', 'username profileImage')
+      .populate('following', 'username profileImage');
 
-    if (user) {
-      res.json({
-        success: true,
-        user: {
-          _id: user._id,
-          username: user.username,
-          email: user.email,
-          isArtist: user.isArtist,
-          profileImage: user.profileImage,
-          bio: user.bio,
-          website: user.website,
-          createdAt: user.createdAt
-        }
-      });
-    } else {
-      res.status(404).json({ 
+    if (!user) {
+      return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
       });
     }
+    
+    // Get count of user's artworks
+    const artworksCount = await require('../models/Artwork').countDocuments({ creator: user._id });
+
+    // Format user data for response
+    const userData = {
+      ...user.toObject(),
+      artworksCount,
+      followersCount: user.followers ? user.followers.length : 0,
+      followingCount: user.following ? user.following.length : 0
+    };
+
+    res.json({
+      success: true,
+      user: userData
+    });
   } catch (error) {
+    console.error('Error in getUserProfile:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Update user password
+// @route   PUT /api/auth/password
+// @access  Private
+const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    // Find user
+    const user = await User.findById(req.user._id).select('+password');
+    
+    // Check if current password is correct
+    if (!(await user.matchPassword(currentPassword))) {
+      return res.status(401).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+    
+    // Update password
+    user.password = newPassword;
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    console.error('Error in updatePassword:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Forgot password (send reset email)
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // In a real app, you would:
+    // 1. Find user by email
+    // 2. Generate a reset token
+    // 3. Save token and expiry to user model
+    // 4. Send password reset email
+    
+    // For demo purposes, we'll just respond with success
+    res.json({
+      success: true,
+      message: 'If an account with that email exists, a password reset link has been sent'
+    });
+  } catch (error) {
+    console.error('Error in forgotPassword:', error);
     res.status(500).json({
       success: false,
       message: error.message
@@ -134,5 +227,7 @@ const getUserProfile = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
-  getUserProfile
+  getUserProfile,
+  updatePassword,
+  forgotPassword
 };

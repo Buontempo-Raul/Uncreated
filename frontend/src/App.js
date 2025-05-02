@@ -12,6 +12,7 @@ import Home from './pages/Home/Home';
 import Shop from './pages/Shop/Shop';
 import Explore from './pages/Explore/Explore';
 import Profile from './pages/Profile/Profile';
+import EditProfile from './pages/Profile/EditProfile';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import NotFound from './pages/NotFound/NotFound';
@@ -46,6 +47,7 @@ function App() {
                 {/* Protected User Routes */}
                 <Route element={<ProtectedRoute />}>
                   <Route path="/profile/:username" element={<Profile />} />
+                  <Route path="/profile/edit" element={<EditProfile />} />
                 </Route>
                 
                 {/* Protected Admin Routes */}

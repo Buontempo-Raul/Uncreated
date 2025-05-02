@@ -8,7 +8,9 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Username is required'],
     unique: true,
     trim: true,
-    minlength: [3, 'Username must be at least 3 characters']
+    minlength: [3, 'Username must be at least 3 characters'],
+    maxlength: [30, 'Username cannot exceed 30 characters'],
+    match: [/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and hyphens']
   },
   email: {
     type: String,
@@ -26,21 +28,62 @@ const userSchema = new mongoose.Schema({
   },
   profileImage: {
     type: String,
-    default: 'default-profile.jpg'
+    default: 'uploads/default-profile.jpg'
   },
   bio: {
     type: String,
-    default: ''
+    default: '',
+    maxlength: [500, 'Bio cannot exceed 500 characters']
   },
-  website: String,
+  website: {
+    type: String,
+    default: '',
+    match: [
+      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
+      'Please provide a valid URL'
+    ]
+  },
   isArtist: {
     type: Boolean,
     default: false
+  },
+  socialLinks: {
+    instagram: { type: String, default: '' },
+    twitter: { type: String, default: '' },
+    facebook: { type: String, default: '' },
+    pinterest: { type: String, default: '' }
   },
   favorites: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Artwork'
   }],
+  followers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  settings: {
+    emailNotifications: {
+      type: Boolean,
+      default: true
+    },
+    privateProfile: {
+      type: Boolean,
+      default: false
+    }
+  },
+  role: {
+    type: String,
+    enum: ['user', 'artist', 'admin'],
+    default: 'user'
+  },
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -63,6 +106,20 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Set role based on isArtist value
+userSchema.pre('save', function(next) {
+  if (this.isModified('isArtist')) {
+    this.role = this.isArtist ? 'artist' : 'user';
+  }
+  next();
+});
+
+// Virtual for full name
+userSchema.virtual('name').get(function() {
+  return this.firstName && this.lastName ? 
+    `${this.firstName} ${this.lastName}` : this.username;
+});
 
 const User = mongoose.model('User', userSchema);
 

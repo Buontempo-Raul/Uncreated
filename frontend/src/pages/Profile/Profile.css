@@ -1,280 +1,499 @@
 /* src/pages/Profile/Profile.css */
 .profile-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-header {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.profile-image {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--primary-color);
+  flex-shrink: 0;
+}
+
+.profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 300px;
+}
+
+.profile-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.username {
+  font-size: 2rem;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.artist-badge {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.bio {
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.website {
+  margin-bottom: 0.5rem;
+}
+
+.website a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.website a:hover {
+  text-decoration: underline;
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  color: #666;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.social-link.instagram:hover {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.social-link.twitter:hover {
+  background-color: #1da1f2;
+}
+
+.social-link.facebook:hover {
+  background-color: #4267B2;
+}
+
+.social-link.pinterest:hover {
+  background-color: #E60023;
+}
+
+.social-icon {
+  font-size: 1.2rem;
+  font-style: normal;
+}
+
+.social-icon.instagram::before {
+  content: "📸";
+}
+
+.social-icon.twitter::before {
+  content: "🐦";
+}
+
+.social-icon.facebook::before {
+  content: "👤";
+}
+
+.social-icon.pinterest::before {
+  content: "📌";
+}
+
+.joined-date {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.edit-profile-btn, .follow-btn, .unfollow-btn {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+}
+
+.edit-profile-btn {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.edit-profile-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.follow-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.follow-btn:hover {
+  background-color: #8a5ce6;
+}
+
+.unfollow-btn {
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.unfollow-btn:hover {
+  background-color: #f8d7da;
+  color: #dc3545;
+  border-color: #f5c6cb;
+}
+
+.profile-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.tab-btn {
+  background-color: transparent;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+.profile-content {
+  min-height: 300px;
+}
+
+.artworks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.artwork-card {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.artwork-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.artwork-image {
+  height: 200px;
+  overflow: hidden;
+  display: block;
+}
+
+.artwork-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.artwork-card:hover .artwork-image img {
+  transform: scale(1.05);
+}
+
+.artwork-details {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.artwork-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.artwork-title a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.artwork-title a:hover {
+  color: var(--primary-color);
+}
+
+.artwork-creator {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.artwork-creator a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.artwork-creator a:hover {
+  text-decoration: underline;
+}
+
+.artwork-category {
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: capitalize;
+  margin-bottom: 0.5rem;
+}
+
+.artwork-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.artwork-price {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.artwork-status {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.artwork-status.for-sale {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.artwork-status.sold {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.remove-favorite-btn {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-favorite-btn:hover {
+  background-color: #f8d7da;
+  color: #dc3545;
+  border-color: #f5c6cb;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background-color: white;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.pagination-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.no-content p {
+  color: #888;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.create-btn, .browse-btn {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.create-btn:hover, .browse-btn:hover {
+  background-color: #8a5ce6;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+  color: #666;
+  font-style: italic;
+}
+
+.error-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--error-color);
+  font-weight: 500;
+}
+
+@media screen and (max-width: 768px) {
+  .profile-container {
+    padding: 1.5rem;
   }
   
   .profile-header {
-    display: flex;
-    gap: 2rem;
-    margin-bottom: 3rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  
-  .profile-image {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid var(--primary-color);
-    flex-shrink: 0;
-  }
-  
-  .profile-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .profile-info {
-    flex: 1;
-    min-width: 300px;
-  }
-  
-  .username {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
-  }
-  
-  .artist-badge {
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    margin-bottom: 1rem;
-  }
-  
-  .bio {
-    color: #666;
-    margin-bottom: 1rem;
-    line-height: 1.5;
-  }
-  
-  .website {
-    margin-bottom: 0.5rem;
-  }
-  
-  .website a {
-    color: var(--primary-color);
-    text-decoration: none;
-  }
-  
-  .website a:hover {
-    text-decoration: underline;
-  }
-  
-  .joined-date {
-    color: #888;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .edit-profile-btn {
-    display: inline-block;
-    background-color: transparent;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-  
-  .edit-profile-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
-  }
-  
-  .profile-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-  }
-  
-  .tab-btn {
-    background-color: transparent;
-    border: none;
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    color: #666;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-  }
-  
-  .tab-btn.active {
-    color: var(--primary-color);
-  }
-  
-  .tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary-color);
-  }
-  
-  .profile-content {
-    min-height: 300px;
-  }
-  
-  .artworks-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem;
-  }
-  
-  .artwork-card {
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .artwork-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-  
-  .artwork-image {
-    height: 200px;
-    overflow: hidden;
-    display: block;
-  }
-  
-  .artwork-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  
-  .artwork-card:hover .artwork-image img {
-    transform: scale(1.05);
-  }
-  
-  .artwork-details {
-    padding: 1rem;
-  }
-  
-  .artwork-title {
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-  }
-  
-  .artwork-title a {
-    color: var(--text-color);
-    text-decoration: none;
-  }
-  
-  .artwork-title a:hover {
-    color: var(--primary-color);
-  }
-  
-  .artwork-category {
-    font-size: 0.8rem;
-    color: #888;
-    text-transform: capitalize;
-    margin-bottom: 0.5rem;
-  }
-  
-  .artwork-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .artwork-price {
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: var(--text-color);
-  }
-  
-  .artwork-status {
-    font-size: 0.8rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-  }
-  
-  .artwork-status.for-sale {
-    background-color: var(--success-color);
-    color: white;
-  }
-  
-  .artwork-status.sold {
-    background-color: #f8f9fa;
-    color: #6c757d;
-  }
-  
-  .no-content {
-    display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 3rem;
     text-align: center;
   }
   
-  .no-content p {
-    color: #888;
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
+  .profile-info {
+    min-width: unset;
+    width: 100%;
   }
   
-  .create-btn, .browse-btn {
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.8rem 1.5rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-  }
-  
-  .create-btn:hover, .browse-btn:hover {
-    background-color: #8a5ce6;
-  }
-  
-  .loading {
-    display: flex;
+  .profile-title-section {
     justify-content: center;
-    padding: 3rem;
-    color: #666;
-    font-style: italic;
   }
   
-  .error-container {
-    display: flex;
+  .profile-stats {
     justify-content: center;
-    padding: 3rem;
-    color: var(--error-color);
-    font-weight: 500;
   }
   
-  @media screen and (max-width: 768px) {
-    .profile-header {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    
-    .profile-info {
-      min-width: unset;
-    }
-    
-    .tab-btn {
-      padding: 0.8rem 1rem;
-      font-size: 0.9rem;
-    }
+  .social-links {
+    justify-content: center;
   }
+  
+  .profile-actions {
+    justify-content: center;
+  }
+  
+  .tab-btn {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+  }
+}
